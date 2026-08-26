@@ -22,7 +22,7 @@ let boundaryLayer, plantsLayer, wellsLayer;
 let wellsData = [];
 
 Promise.all([
-  fetch('data/field_boundary.geojson').then(r => r.json()),
+  fetch('data/menengai caldera.geojson').then(r => r.json()),
   fetch('data/power_stations.geojson').then(r => r.json()),
   fetch('data/wells.geojson').then(r => r.json())
 ]).then(([boundary, plants, wells]) => {
