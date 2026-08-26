@@ -1,0 +1,9 @@
+{
+  "type": "FeatureCollection",
+  "note": "Publicly documented power station locations and capacities",
+  "features": [
+    { "type": "Feature", "properties": { "name": "Menengai I",   "capacity_mw": 35 }, "geometry": { "type": "Point", "coordinates": [36.058, -0.194] } },
+    { "type": "Feature", "properties": { "name": "Menengai II",  "capacity_mw": 35 }, "geometry": { "type": "Point", "coordinates": [36.0631, -0.1961] } },
+    { "type": "Feature", "properties": { "name": "Menengai III", "capacity_mw": 35 }, "geometry": { "type": "Point", "coordinates": [36.0578, -0.1956] } }
+  ]
+}
