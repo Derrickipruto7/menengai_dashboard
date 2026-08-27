@@ -9,7 +9,7 @@ const STATUS_COLORS = {
   'Non-producing': '#6B7A8F',
   'Injection': '#3EA39E'
 };
-
+ const map = L.map('map', { zoomControl: true }).setView([-0.196, 36.062], 13);
 L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg', {
   attribution: 'Sentinel-2 cloudless by <a href="https://s2maps.eu">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
   maxZoom: 14
