@@ -123,6 +123,18 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 .popup-title { font-family: var(--font-mono); color: var(--sulfur); font-size: 0.85rem; margin: 0 0 6px; }
 .popup-row { font-size: 0.8rem; color: var(--ink-dim); margin: 2px 0; }
 
+/* Leaflet basemap-switcher control restyle */
+.leaflet-control-layers {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+  border-radius: 8px !important;
+}
+.leaflet-control-layers-toggle {
+  filter: invert(1) brightness(1.6);
+}
+.leaflet-control-layers label { font-size: 0.82rem; color: var(--ink); margin-bottom: 4px; }
+.leaflet-control-layers-separator { border-top: 1px solid var(--line) !important; }
 /* Pulsing marker ring for producing wells - signature element */
 .pulse-ring {
   border-radius: 50%;
