@@ -1,13 +1,13 @@
 {
 "type": "FeatureCollection",
-"name": "powerplant",
+"name": "power_stations",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "power plant": "Power plant boundary Point 1(Ketraco)", "Easting": "172188", "Northing": "9978110" }, "geometry": { "type": "Point", "coordinates": [ 172188.0, 9978110.0 ] } },
-{ "type": "Feature", "properties": { "power plant": "Power plant boundary Point 2", "Easting": "172469", "Northing": "9978167" }, "geometry": { "type": "Point", "coordinates": [ 172469.0, 9978167.0 ] } },
-{ "type": "Feature", "properties": { "power plant": "Power plant boundary Point 3", "Easting": "172703", "Northing": "9978271" }, "geometry": { "type": "Point", "coordinates": [ 172703.0, 9978271.0 ] } },
-{ "type": "Feature", "properties": { "power plant": "Power plant boundaryPoint 4", "Easting": "172464", "Northing": "9978737" }, "geometry": { "type": "Point", "coordinates": [ 172464.0, 9978737.0 ] } },
-{ "type": "Feature", "properties": { "power plant": "Power plant boundaryPoint 5", "Easting": "172261", "Northing": "9978490" }, "geometry": { "type": "Point", "coordinates": [ 172261.0, 9978490.0 ] } },
-{ "type": "Feature", "properties": { "power plant": "Power plant boundary Point 6 ", "Easting": "172020", "Northing": "9978326" }, "geometry": { "type": "Point", "coordinates": [ 172020.0, 9978326.0 ] } }
+{ "type": "Feature", "properties": { "name": "Power plant boundary Point 1(Ketraco)", "Easting": "172188", "Northing": "9978110", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172188.0, 9978110.0 ] } },
+{ "type": "Feature", "properties": { "name": "Power plant boundary Point 2", "Easting": "172469", "Northing": "9978167", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172469.0, 9978167.0 ] } },
+{ "type": "Feature", "properties": { "name": "Power plant boundary Point 3", "Easting": "172703", "Northing": "9978271", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172703.0, 9978271.0 ] } },
+{ "type": "Feature", "properties": { "name": "Power plant boundaryPoint 4", "Easting": "172464", "Northing": "9978737", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172464.0, 9978737.0 ] } },
+{ "type": "Feature", "properties": { "name": "Power plant boundaryPoint 5", "Easting": "172261", "Northing": "9978490", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172261.0, 9978490.0 ] } },
+{ "type": "Feature", "properties": { "name": "Power plant boundary Point 6 ", "Easting": "172020", "Northing": "9978326", "capacity_mw": "35" }, "geometry": { "type": "Point", "coordinates": [ 172020.0, 9978326.0 ] } }
 ]
 }

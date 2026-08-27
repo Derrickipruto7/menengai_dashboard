@@ -1,22 +1,22 @@
 {
 "type": "FeatureCollection",
-"name": "well",
+"name": "wells",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "well": "MW 01", "Easting ": 171830, "Northing": 9976838 }, "geometry": { "type": "Point", "coordinates": [ 171830.0, 9976838.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 02", "Easting ": 171597, "Northing": 9979478 }, "geometry": { "type": "Point", "coordinates": [ 171597.0, 9979478.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 03", "Easting ": 173950, "Northing": 9977027 }, "geometry": { "type": "Point", "coordinates": [ 173950.0, 9977027.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 09", "Easting ": 172843, "Northing": 9977315 }, "geometry": { "type": "Point", "coordinates": [ 172843.0, 9977315.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW10", "Easting ": 172553, "Northing": 9976635 }, "geometry": { "type": "Point", "coordinates": [ 172553.0, 9976635.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 12", "Easting ": 173573, "Northing": 9976446 }, "geometry": { "type": "Point", "coordinates": [ 173573.0, 9976446.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 13", "Easting ": 172363, "Northing": 9977245 }, "geometry": { "type": "Point", "coordinates": [ 172363.0, 9977245.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 17", "Easting ": 171275, "Northing": 9976756 }, "geometry": { "type": "Point", "coordinates": [ 171275.0, 9976756.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 18", "Easting ": 176497, "Northing": 9977611 }, "geometry": { "type": "Point", "coordinates": [ 176497.0, 9977611.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 20", "Easting ": 171982, "Northing": 9977433 }, "geometry": { "type": "Point", "coordinates": [ 171982.0, 9977433.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 21", "Easting ": 171467, "Northing": 9977448 }, "geometry": { "type": "Point", "coordinates": [ 171467.0, 9977448.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 36", "Easting ": 172335, "Northing": 9977650 }, "geometry": { "type": "Point", "coordinates": [ 172335.0, 9977650.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 37", "Easting ": 171608, "Northing": 9977108 }, "geometry": { "type": "Point", "coordinates": [ 171608.0, 9977108.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 38", "Easting ": 172840, "Northing": 9977685 }, "geometry": { "type": "Point", "coordinates": [ 172840.0, 9977685.0 ] } },
-{ "type": "Feature", "properties": { "well": "MW 39", "Easting ": 172136, "Northing": 9976759 }, "geometry": { "type": "Point", "coordinates": [ 172136.0, 9976759.0 ] } }
+{ "type": "Feature", "properties": { "well_id": "MW 01", "Easting ": 171830, "Northing": 9976838, "status": "Producing ", "phase": "I", "depth_m": 2200, "temp_c": 310 }, "geometry": { "type": "Point", "coordinates": [ 171830.0, 9976838.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 02", "Easting ": 171597, "Northing": 9979478, "status": "Producing ", "phase": "I", "depth_m": 2450, "temp_c": 295 }, "geometry": { "type": "Point", "coordinates": [ 171597.0, 9979478.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 03", "Easting ": 173950, "Northing": 9977027, "status": "Producing ", "phase": "I", "depth_m": 2380, "temp_c": 244 }, "geometry": { "type": "Point", "coordinates": [ 173950.0, 9977027.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 09", "Easting ": 172843, "Northing": 9977315, "status": "Non-producing", "phase": "I", "depth_m": 2100, "temp_c": 153 }, "geometry": { "type": "Point", "coordinates": [ 172843.0, 9977315.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW10", "Easting ": 172553, "Northing": 9976635, "status": "Producing ", "phase": null, "depth_m": 2451, "temp_c": 258 }, "geometry": { "type": "Point", "coordinates": [ 172553.0, 9976635.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 12", "Easting ": 173573, "Northing": 9976446, "status": "Producing ", "phase": "I", "depth_m": 1800, "temp_c": 245 }, "geometry": { "type": "Point", "coordinates": [ 173573.0, 9976446.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 13", "Easting ": 172363, "Northing": 9977245, "status": "Injection", "phase": "I", "depth_m": 2100, "temp_c": 254 }, "geometry": { "type": "Point", "coordinates": [ 172363.0, 9977245.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 17", "Easting ": 171275, "Northing": 9976756, "status": "Producing ", "phase": "II", "depth_m": 1950, "temp_c": 260 }, "geometry": { "type": "Point", "coordinates": [ 171275.0, 9976756.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 18", "Easting ": 176497, "Northing": 9977611, "status": "Non-producing", "phase": "II", "depth_m": 2021, "temp_c": 234 }, "geometry": { "type": "Point", "coordinates": [ 176497.0, 9977611.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 20", "Easting ": 171982, "Northing": 9977433, "status": "Producing ", "phase": "II", "depth_m": 2500, "temp_c": 213 }, "geometry": { "type": "Point", "coordinates": [ 171982.0, 9977433.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 21", "Easting ": 171467, "Northing": 9977448, "status": "Producing ", "phase": "III", "depth_m": 2210, "temp_c": 253 }, "geometry": { "type": "Point", "coordinates": [ 171467.0, 9977448.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 36", "Easting ": 172335, "Northing": 9977650, "status": "Producing ", "phase": "III", "depth_m": 1982, "temp_c": 241 }, "geometry": { "type": "Point", "coordinates": [ 172335.0, 9977650.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 37", "Easting ": 171608, "Northing": 9977108, "status": "Injection", "phase": "IV", "depth_m": 2501, "temp_c": 220 }, "geometry": { "type": "Point", "coordinates": [ 171608.0, 9977108.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 38", "Easting ": 172840, "Northing": 9977685, "status": "Injection", "phase": "IV", "depth_m": 1890, "temp_c": 320 }, "geometry": { "type": "Point", "coordinates": [ 172840.0, 9977685.0 ] } },
+{ "type": "Feature", "properties": { "well_id": "MW 39", "Easting ": 172136, "Northing": 9976759, "status": "Non-producing", "phase": "IV", "depth_m": 1900, "temp_c": 312 }, "geometry": { "type": "Point", "coordinates": [ 172136.0, 9976759.0 ] } }
 ]
 }
