@@ -10,9 +10,9 @@ const STATUS_COLORS = {
   'Injection': '#3EA39E'
 };
 
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
-  maxZoom: 19
+L.tileLayer('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg', {
+  attribution: 'Imagery courtesy NASA EOSDIS GIBS',
+  maxZoom: 9
 }).addTo(map);
 
 let boundaryLayer, plantsLayer, wellsLayer;
