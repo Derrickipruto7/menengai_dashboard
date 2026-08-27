@@ -10,9 +10,9 @@ const STATUS_COLORS = {
   'Injection': '#3EA39E'
 };
 
-L.tileLayer('https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/imagery/{z}/{y}/{x}?token=AQ.Ab8RN6IBQ8sGNCm2-fkAdxbRN-z0yLS4_36HXcdy87pmQDp3rg', {
-  attribution: 'Powered by Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
-  maxZoom: 19
+L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg', {
+  attribution: 'Sentinel-2 cloudless by <a href="https://s2maps.eu">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
+  maxZoom: 14
 }).addTo(map);
 
 let boundaryLayer, plantsLayer, wellsLayer;
