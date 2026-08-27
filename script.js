@@ -10,23 +10,9 @@ const STATUS_COLORS = {
   'Injection': '#3EA39E'
 };
 
-const map = L.map('map', { zoomControl: true }).setView([-0.196, 36.062], 13);
-
-const darkBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-  subdomains: 'abcd', maxZoom: 19
-});
-
-const satelliteBasemap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
   maxZoom: 19
-});
-
-darkBasemap.addTo(map); // default basemap shown on load
-
-L.control.layers({
-  "Dark": darkBasemap,
-  "Satellite": satelliteBasemap
 }).addTo(map);
 
 let boundaryLayer, plantsLayer, wellsLayer;
