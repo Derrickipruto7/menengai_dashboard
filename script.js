@@ -1,7 +1,9 @@
 /* ==========================================================
-   Menengai Geothermal Dashboard
-   Loads local GeoJSON (exported from QGIS) and renders an
-   interactive Leaflet map + stats panel + filterable well list.
+   Menengai Geothermal Dashboard (no login / no Firebase)
+   All data loads from local GeoJSON files in data/.
+   Everyone sees full well details - status, phase, depth,
+   temperature - plus a downloadable daily report link if the
+   well has one.
    ========================================================== */
 
 const STATUS_COLORS = {
@@ -9,38 +11,31 @@ const STATUS_COLORS = {
   'Non-producing': '#6B7A8F',
   'Injection': '#3EA39E'
 };
+
 const map = L.map('map', { zoomControl: true }).setView([-0.196, 36.062], 13);
 
 const satelliteBasemap = L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg', {
   attribution: 'Sentinel-2 cloudless by <a href="https://s2maps.eu">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
   maxZoom: 14
 });
-
 const darkBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-  subdomains: 'abcd',
-  maxZoom: 19
+  subdomains: 'abcd', maxZoom: 19
 });
-
 const streetsBasemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
-  subdomains: 'abc',
-  maxZoom: 19
+  subdomains: 'abc', maxZoom: 19
 });
-
 const terrainBasemap = L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/terrain-light_3857/default/g/{z}/{y}/{x}.jpg', {
   attribution: 'Terrain Light by <a href="https://maps.eox.at">EOX</a>',
   maxZoom: 14
 });
-
-satelliteBasemap.addTo(map); // shown by default
-
+satelliteBasemap.addTo(map);
 L.control.layers({
-  'Satellite imagery': satelliteBasemap,
-  'Dark': darkBasemap,
-  'Streets': streetsBasemap,
-  'Terrain': terrainBasemap
+  'Satellite imagery': satelliteBasemap, 'Dark': darkBasemap,
+  'Streets': streetsBasemap, 'Terrain': terrainBasemap
 }, null, { position: 'topright', collapsed: true }).addTo(map);
+
 let boundaryLayer, plantsLayer, wellsLayer;
 let wellsData = [];
 
@@ -97,11 +92,15 @@ function wellIcon(status) {
 }
 
 function wellPopup(p) {
+  const reportLink = p.report_url
+    ? `<a class="popup-report-btn" href="${p.report_url}" target="_blank" rel="noopener">Download daily report (PDF)</a>`
+    : `<div class="popup-row popup-report-missing">No daily report on file for this well.</div>`;
   return `<div class="popup-title">${p.well_id}</div>
-    <div class="popup-row">Status: ${p.status}</div>
-    <div class="popup-row">Phase: ${p.phase}</div>
-    <div class="popup-row">Depth: ${p.depth_m.toLocaleString()} m</div>
-    <div class="popup-row">Reservoir temp: ${p.temp_c} &deg;C</div>`;
+    <div class="popup-row"><span class="popup-label">Status</span> ${p.status}</div>
+    <div class="popup-row"><span class="popup-label">Phase</span> ${p.phase}</div>
+    <div class="popup-row"><span class="popup-label">Depth</span> ${Number(p.depth_m).toLocaleString()} m</div>
+    <div class="popup-row"><span class="popup-label">Reservoir temp</span> ${p.temp_c} &deg;C</div>
+    ${reportLink}`;
 }
 
 function plantPopup(p) {

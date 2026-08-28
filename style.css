@@ -120,8 +120,22 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 /* Leaflet popup restyle */
 .leaflet-popup-content-wrapper { background: var(--bg-panel); color: var(--ink); border-radius: 8px; }
 .leaflet-popup-tip { background: var(--bg-panel); }
-.popup-title { font-family: var(--font-mono); color: var(--sulfur); font-size: 0.85rem; margin: 0 0 6px; }
-.popup-row { font-size: 0.8rem; color: var(--ink-dim); margin: 2px 0; }
+.popup-title { font-family: var(--font-mono); color: var(--sulfur); font-size: 0.9rem; margin: 0 0 8px; }
+.popup-row { font-size: 0.8rem; color: var(--ink); margin: 3px 0; }
+.popup-label { color: var(--ink-dim); display: inline-block; min-width: 100px; }
+.popup-report-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 12px;
+  background: var(--magma);
+  color: #171412;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.popup-report-btn:hover { background: #ED7451; }
+.popup-report-missing { color: var(--ink-dim); font-style: italic; margin-top: 8px; }
 
 /* Leaflet basemap-switcher control restyle */
 .leaflet-control-layers {
@@ -135,7 +149,8 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 }
 .leaflet-control-layers label { font-size: 0.82rem; color: var(--ink); margin-bottom: 4px; }
 .leaflet-control-layers-separator { border-top: 1px solid var(--line) !important; }
-/* Pulsing marker ring for producing wells - signature element */
+
+/* Pulsing marker ring for producing wells */
 .pulse-ring {
   border-radius: 50%;
   border: 2px solid var(--magma);
