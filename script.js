@@ -100,6 +100,7 @@ function wellPopup(p) {
     <div class="popup-row"><span class="popup-label">Phase</span> ${p.phase}</div>
     <div class="popup-row"><span class="popup-label">Depth</span> ${Number(p.depth_m).toLocaleString()} m</div>
     <div class="popup-row"><span class="popup-label">Reservoir temp</span> ${p.temp_c} &deg;C</div>
+    <div class="popup-row"><span class="popup-label">Pressure</span> ${p.pressure_bar} bar</div>
     ${reportLink}`;
 }
 
