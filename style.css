@@ -134,7 +134,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
   font-weight: 600;
   text-decoration: none;
 }
-.popup-report-btn:hover { background: #ED7451; }
+.popup-report-btn:hover { background: #edc951; }
 .popup-report-missing { color: var(--ink-dim); font-style: italic; margin-top: 8px; }
 
 /* Leaflet basemap-switcher control restyle */
