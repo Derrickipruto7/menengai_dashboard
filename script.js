@@ -64,7 +64,7 @@ Promise.all([
  roadsLayer = L.geoJSON(roads, {
   style: {
     color: '#FFB6C1',   // Light pink
-    weight: 3,
+    weight: 1,
     fillOpacity: 0.04,
     fillColor: '#FFB6C1'
   }
