@@ -61,9 +61,14 @@ Promise.all([
   renderWellList();
   renderStats(wells.features, plants.features);
    
-  roadsLayer = L.geoJSON(roads, {
-    style: { color: '#E8B33D', weight: 2, dashArray: '6 4', fillOpacity: 0.04, fillColor: '#E8B33D' }
-  }).addTo(map);
+ roadsLayer = L.geoJSON(roads, {
+  style: {
+    color: '#FFB6C1',   // Light pink
+    weight: 3,
+    fillOpacity: 0.04,
+    fillColor: '#FFB6C1'
+  }
+}).addTo(map);
    
 }).catch(err => {
   document.getElementById('map').innerHTML =
