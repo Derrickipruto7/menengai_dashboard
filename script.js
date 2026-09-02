@@ -36,14 +36,15 @@ L.control.layers({
   'Streets': streetsBasemap, 'Terrain': terrainBasemap
 }, null, { position: 'topright', collapsed: true }).addTo(map);
 
-let boundaryLayer, plantsLayer, wellsLayer;
+let boundaryLayer, plantsLayer, wellsLayer,roadsLayer;
 let wellsData = [];
 
 Promise.all([
   fetch('data/field_boundary.geojson').then(r => r.json()),
   fetch('data/power_stations.geojson').then(r => r.json()),
-  fetch('data/wells.geojson').then(r => r.json())
-]).then(([boundary, plants, wells]) => {
+  fetch('data/wells.geojson').then(r => r.json()),
+   fetch('data/AccessRoads.geojson').then(r => r.json())
+]).then(([boundary, plants, wells,roads]) => {
 
   boundaryLayer = L.geoJSON(boundary, {
     style: { color: '#E8B33D', weight: 2, dashArray: '6 4', fillOpacity: 0.04, fillColor: '#E8B33D' }
@@ -59,7 +60,11 @@ Promise.all([
   renderWells();
   renderWellList();
   renderStats(wells.features, plants.features);
-
+   
+  roadsLayer = L.geoJSON(roads, {
+    style: { color: '#E8B33D', weight: 2, dashArray: '6 4', fillOpacity: 0.04, fillColor: '#E8B33D' }
+  }).addTo(map);
+   
 }).catch(err => {
   document.getElementById('map').innerHTML =
     '<p style="color:#ADA49A;padding:24px;font-family:Inter,sans-serif;">Could not load data files. If you\'re opening index.html directly from disk, browsers block local fetch() — run a local server instead, e.g. <code>python3 -m http.server</code> from this folder, then visit localhost.</p>';
@@ -172,6 +177,9 @@ document.getElementById('togglePlants').addEventListener('change', (e) => {
 });
 document.getElementById('toggleWells').addEventListener('change', (e) => {
   e.target.checked ? map.addLayer(wellsLayer) : map.removeLayer(wellsLayer);
+});
+document.getElementById('toggleRoads').addEventListener('change', (e) => {
+  e.target.checked ? map.addLayer(roadsLayer) : map.removeLayer(roadsLayer);
 });
 document.querySelectorAll('.statusFilter').forEach(cb => {
   cb.addEventListener('change', () => { renderWells(); renderWellList(); });
