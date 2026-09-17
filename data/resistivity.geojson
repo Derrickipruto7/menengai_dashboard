@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "note": "SAMPLE DATA - replace with your real MT/TDEM resistivity survey readings. Each feature is one survey station reading for one year.",
+  "features": [
+    { "type": "Feature", "properties": { "station_id": "R1", "year": 2015, "resistivity_ohm_m": 4,   "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0570, -0.1920] } },
+    { "type": "Feature", "properties": { "station_id": "R2", "year": 2015, "resistivity_ohm_m": 8,   "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0610, -0.1950] } },
+    { "type": "Feature", "properties": { "station_id": "R3", "year": 2015, "resistivity_ohm_m": 22,  "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0650, -0.1900] } },
+    { "type": "Feature", "properties": { "station_id": "R4", "year": 2015, "resistivity_ohm_m": 65,  "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0520, -0.2000] } },
+    { "type": "Feature", "properties": { "station_id": "R5", "year": 2015, "resistivity_ohm_m": 150, "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0700, -0.2050] } },
+
+    { "type": "Feature", "properties": { "station_id": "R1", "year": 2019, "resistivity_ohm_m": 3,   "depth_m": 1200 }, "geometry": { "type": "Point", "coordinates": [36.0570, -0.1920] } },
+    { "type": "Feature", "properties": { "station_id": "R2", "year": 2019, "resistivity_ohm_m": 6,   "depth_m": 1200 }, "geometry": { "type": "Point", "coordinates": [36.0610, -0.1950] } },
+    { "type": "Feature", "properties": { "station_id": "R3", "year": 2019, "resistivity_ohm_m": 18,  "depth_m": 1200 }, "geometry": { "type": "Point", "coordinates": [36.0650, -0.1900] } },
+    { "type": "Feature", "properties": { "station_id": "R4", "year": 2019, "resistivity_ohm_m": 48,  "depth_m": 1200 }, "geometry": { "type": "Point", "coordinates": [36.0520, -0.2000] } },
+    { "type": "Feature", "properties": { "station_id": "R5", "year": 2019, "resistivity_ohm_m": 130, "depth_m": 1200 }, "geometry": { "type": "Point", "coordinates": [36.0700, -0.2050] } },
+
+    { "type": "Feature", "properties": { "station_id": "R1", "year": 2023, "resistivity_ohm_m": 3,   "depth_m": 1500 }, "geometry": { "type": "Point", "coordinates": [36.0570, -0.1920] } },
+    { "type": "Feature", "properties": { "station_id": "R2", "year": 2023, "resistivity_ohm_m": 5,   "depth_m": 1500 }, "geometry": { "type": "Point", "coordinates": [36.0610, -0.1950] } },
+    { "type": "Feature", "properties": { "station_id": "R3", "year": 2023, "resistivity_ohm_m": 12,  "depth_m": 1500 }, "geometry": { "type": "Point", "coordinates": [36.0650, -0.1900] } },
+    { "type": "Feature", "properties": { "station_id": "R4", "year": 2023, "resistivity_ohm_m": 35,  "depth_m": 1500 }, "geometry": { "type": "Point", "coordinates": [36.0520, -0.2000] } },
+    { "type": "Feature", "properties": { "station_id": "R5", "year": 2023, "resistivity_ohm_m": 110, "depth_m": 1500 }, "geometry": { "type": "Point", "coordinates": [36.0700, -0.2050] } }
+  ]
+}
