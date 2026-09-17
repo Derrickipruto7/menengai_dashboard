@@ -36,26 +36,92 @@ L.control.layers({
   'Streets': streetsBasemap, 'Terrain': terrainBasemap
 }, null, { position: 'topright', collapsed: true }).addTo(map);
 
-<!-- Add this as a new panel-section inside <aside class="panel">, anywhere
-     among your other panel-section blocks (e.g. right after "Layers") -->
+/* ==========================================================
+   Resistivity survey layer
+   Add this whole block into script.js (near the bottom is fine,
+   after `map` has been created). Loads data/resistivity.geojson,
+   renders year-selector pills, and shows classed-color survey
+   points on the map for whichever year is selected.
+   ========================================================== */
 
-<div class="panel-section">
-  <h2>Resistivity Survey</h2>
+let resistivityData = [];
+let resistivityYears = [];
+let selectedYear = null;
+let resistivityLayer = L.layerGroup().addTo(map);
 
-  <label class="toggle"><input type="checkbox" id="toggleResistivity" checked><span>Show on map</span></label>
+// Classed color scale - standard geophysics convention: low resistivity
+// (conductive clay cap, a geothermal target indicator) shown in warm
+// colors, high resistivity (resistive basement) shown in cool colors.
+function resistivityColor(ohmM) {
+  if (ohmM < 5) return '#B91C1C';
+  if (ohmM < 15) return '#F97316';
+  if (ohmM < 40) return '#FACC15';
+  if (ohmM < 100) return '#22C55E';
+  return '#2563EB';
+}
 
-  <div class="year-pills" id="yearPills"><!-- filled by script.js --></div>
+fetch('data/resistivity.geojson')
+  .then(r => r.json())
+  .then(geojson => {
+    resistivityData = geojson.features;
+    resistivityYears = [...new Set(resistivityData.map(f => f.properties.year))].sort();
+    selectedYear = resistivityYears[resistivityYears.length - 1]; // default to most recent
+    renderYearPills();
+    renderResistivityLayer();
+  })
+  .catch(err => console.error('Could not load resistivity data:', err));
 
-  <div class="resistivity-legend">
-    <div class="legend-row"><span class="dot" style="background:#B91C1C"></span><span>&lt; 5 &Omega;&middot;m &mdash; strong conductor (clay cap)</span></div>
-    <div class="legend-row"><span class="dot" style="background:#F97316"></span><span>5&ndash;15 &Omega;&middot;m &mdash; conductive</span></div>
-    <div class="legend-row"><span class="dot" style="background:#FACC15"></span><span>15&ndash;40 &Omega;&middot;m &mdash; transitional</span></div>
-    <div class="legend-row"><span class="dot" style="background:#22C55E"></span><span>40&ndash;100 &Omega;&middot;m &mdash; moderately resistive</span></div>
-    <div class="legend-row"><span class="dot" style="background:#2563EB"></span><span>&gt; 100 &Omega;&middot;m &mdash; resistive basement</span></div>
-  </div>
+function renderYearPills() {
+  const container = document.getElementById('yearPills');
+  container.innerHTML = '';
+  resistivityYears.forEach(year => {
+    const pill = document.createElement('button');
+    pill.className = 'year-pill' + (year === selectedYear ? ' active' : '');
+    pill.textContent = year;
+    pill.addEventListener('click', () => {
+      selectedYear = year;
+      renderYearPills();
+      renderResistivityLayer();
+    });
+    container.appendChild(pill);
+  });
+}
 
-  <div class="resistivity-stats" id="resistivityStats"><!-- filled by script.js --></div>
-</div>
+function renderResistivityLayer() {
+  resistivityLayer.clearLayers();
+  const stations = resistivityData.filter(f => f.properties.year === selectedYear);
+
+  stations.forEach(f => {
+    const [lng, lat] = f.geometry.coordinates;
+    const p = f.properties;
+    const color = resistivityColor(p.resistivity_ohm_m);
+
+    L.circleMarker([lat, lng], {
+      radius: 9,
+      fillColor: color,
+      fillOpacity: 0.85,
+      color: '#171412',
+      weight: 1.5
+    })
+      .bindPopup(`<div class="popup-title">${p.station_id} &middot; ${p.year}</div>
+        <div class="popup-row"><span class="popup-label">Resistivity</span> ${p.resistivity_ohm_m} &Omega;&middot;m</div>
+        <div class="popup-row"><span class="popup-label">Depth</span> ${p.depth_m} m</div>`)
+      .addTo(resistivityLayer);
+  });
+
+  const avg = stations.length
+    ? Math.round(stations.reduce((s, f) => s + f.properties.resistivity_ohm_m, 0) / stations.length)
+    : 0;
+  document.getElementById('resistivityStats').innerHTML = `
+    <div class="stat-inline"><span class="value mono">${stations.length}</span><span class="label">stations in ${selectedYear}</span></div>
+    <div class="stat-inline"><span class="value mono">${avg} &Omega;&middot;m</span><span class="label">average reading</span></div>
+  `;
+}
+
+document.getElementById('toggleResistivity').addEventListener('change', (e) => {
+  e.target.checked ? map.addLayer(resistivityLayer) : map.removeLayer(resistivityLayer);
+});
+
 let boundaryLayer, plantsLayer, wellsLayer,roadsLayer;
 let wellsData = [];
 
