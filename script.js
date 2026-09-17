@@ -36,6 +36,26 @@ L.control.layers({
   'Streets': streetsBasemap, 'Terrain': terrainBasemap
 }, null, { position: 'topright', collapsed: true }).addTo(map);
 
+<!-- Add this as a new panel-section inside <aside class="panel">, anywhere
+     among your other panel-section blocks (e.g. right after "Layers") -->
+
+<div class="panel-section">
+  <h2>Resistivity Survey</h2>
+
+  <label class="toggle"><input type="checkbox" id="toggleResistivity" checked><span>Show on map</span></label>
+
+  <div class="year-pills" id="yearPills"><!-- filled by script.js --></div>
+
+  <div class="resistivity-legend">
+    <div class="legend-row"><span class="dot" style="background:#B91C1C"></span><span>&lt; 5 &Omega;&middot;m &mdash; strong conductor (clay cap)</span></div>
+    <div class="legend-row"><span class="dot" style="background:#F97316"></span><span>5&ndash;15 &Omega;&middot;m &mdash; conductive</span></div>
+    <div class="legend-row"><span class="dot" style="background:#FACC15"></span><span>15&ndash;40 &Omega;&middot;m &mdash; transitional</span></div>
+    <div class="legend-row"><span class="dot" style="background:#22C55E"></span><span>40&ndash;100 &Omega;&middot;m &mdash; moderately resistive</span></div>
+    <div class="legend-row"><span class="dot" style="background:#2563EB"></span><span>&gt; 100 &Omega;&middot;m &mdash; resistive basement</span></div>
+  </div>
+
+  <div class="resistivity-stats" id="resistivityStats"><!-- filled by script.js --></div>
+</div>
 let boundaryLayer, plantsLayer, wellsLayer,roadsLayer;
 let wellsData = [];
 
