@@ -2,7 +2,7 @@
   "type": "FeatureCollection",
   "note": "SAMPLE DATA - replace with your real MT/TDEM resistivity survey readings. Each feature is one survey station reading for one year.",
   "features": [
-    { "type": "Feature", "properties": { "station_id": "R1", "year": 2015, "resistivity_ohm_m": 4,   "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0570, -0.1920] } },
+    { "type": "Feature", "properties": { "station_id": "R1", "year": 2015, "resistivity_ohm_m": 4,   "depth_m": 1000 }, "geometry": { "type":"Polygon","coordinates":[[[187042.64670733426,84134.82800915872],[187042.64670733426,84121.26171686253],[187056.21471960418,84121.26171686253],[187056.21471960418,84134.82800915872],[187042.64670733426,84134.82800915872]]]}},
     { "type": "Feature", "properties": { "station_id": "R2", "year": 2015, "resistivity_ohm_m": 8,   "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0610, -0.1950] } },
     { "type": "Feature", "properties": { "station_id": "R3", "year": 2015, "resistivity_ohm_m": 22,  "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0650, -0.1900] } },
     { "type": "Feature", "properties": { "station_id": "R4", "year": 2015, "resistivity_ohm_m": 65,  "depth_m": 1000 }, "geometry": { "type": "Point", "coordinates": [36.0520, -0.2000] } },
