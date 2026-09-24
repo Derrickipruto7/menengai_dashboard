@@ -171,7 +171,6 @@ Promise.all([
 
   if (infrastructures) {
     infrastructuresLayer = L.geoJSON(infrastructures, {
-       .bindPopup(infrastructuresPopup(feature.properties))
       style: { color: '#50ef50', weight: 0.8, fillOpacity: 0.04, fillColor: '#50ef50' }
     }).addTo(map);
   }
