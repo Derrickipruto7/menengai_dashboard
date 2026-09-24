@@ -14,10 +14,13 @@ const STATUS_COLORS = {
 
 const map = L.map('map', { zoomControl: true }).setView([-0.196, 36.062], 13);
 
-const satelliteBasemap = L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg', {
-  attribution: 'Sentinel-2 cloudless by <a href="https://s2maps.eu">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
-  maxZoom: 14
-});
+const satelliteBasemap = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  }
+);
 const darkBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   subdomains: 'abcd', maxZoom: 19
