@@ -122,16 +122,31 @@ document.getElementById('toggleResistivity').addEventListener('change', (e) => {
   e.target.checked ? map.addLayer(resistivityLayer) : map.removeLayer(resistivityLayer);
 });
 
-let boundaryLayer, plantsLayer, wellsLayer,roadsLayer,infrastructuresLayer;
+let boundaryLayer, plantsLayer, wellsLayer, roadsLayer, infrastructuresLayer;
 let wellsData = [];
+
+// Fetches a GeoJSON file but never breaks the whole dashboard if it's
+// missing or invalid - logs a warning and returns null instead, so
+// Promise.all below doesn't reject just because one optional layer failed.
+function safeFetchGeoJSON(path) {
+  return fetch(path)
+    .then(r => {
+      if (!r.ok) throw new Error(`${path} returned HTTP ${r.status}`);
+      return r.json();
+    })
+    .catch(err => {
+      console.warn(`Optional layer not loaded - ${path}:`, err);
+      return null;
+    });
+}
 
 Promise.all([
   fetch('data/field_boundary.geojson').then(r => r.json()),
   fetch('data/power_stations.geojson').then(r => r.json()),
   fetch('data/wells.geojson').then(r => r.json()),
-   fetch('data/AccessRoads.geojson').then(r => r.json()),
-   fetch('data/Infrastructures.geojson').then(r => r.json())
-]).then(([boundary, plants, wells,roads,infrastructes]) => {
+  safeFetchGeoJSON('data/AccessRoads.geojson'),
+  safeFetchGeoJSON('data/Infrastructures.geojson')
+]).then(([boundary, plants, wells, roads, infrastructures]) => {
 
   boundaryLayer = L.geoJSON(boundary, {
     style: { color: '#E8B33D', weight: 2, dashArray: '6 4', fillOpacity: 0.04, fillColor: '#E8B33D' }
@@ -147,25 +162,22 @@ Promise.all([
   renderWells();
   renderWellList();
   renderStats(wells.features, plants.features);
-   
- roadsLayer = L.geoJSON(roads, {
-  style: {
-    color: '#FFB6C1',   // Light pink
-    weight: 0.8,
-    fillOpacity: 0.04,
-    fillColor: '#FFB6C1'
+
+  if (roads) {
+    roadsLayer = L.geoJSON(roads, {
+      style: { color: '#FFB6C1', weight: 0.8, fillOpacity: 0.04, fillColor: '#FFB6C1' }
+    }).addTo(map);
   }
-}).addTo(map);
+
+  if (infrastructures) {
     infrastructuresLayer = L.geoJSON(infrastructures, {
-  style: {
-    color: '#50ef50',   // Light pink
-    weight: 0.8,
-    fillOpacity: 0.04,
-    fillColor: '#50ef50'
+      style: { color: '#50ef50', weight: 0.8, fillOpacity: 0.04, fillColor: '#50ef50' }
+    }).addTo(map);
   }
+
 }).catch(err => {
   document.getElementById('map').innerHTML =
-    '<p style="color:#ADA49A;padding:24px;font-family:Inter,sans-serif;">Could not load data files. If you\'re opening index.html directly from disk, browsers block local fetch() — run a local server instead, e.g. <code>python3 -m http.server</code> from this folder, then visit localhost.</p>';
+    '<p style="color:#ADA49A;padding:24px;font-family:Inter,sans-serif;">Could not load core data files (boundary/power stations/wells). If you\'re opening index.html directly from disk, browsers block local fetch() — run a local server instead, e.g. <code>python3 -m http.server</code> from this folder, then visit localhost.</p>';
   console.error(err);
 });
 
