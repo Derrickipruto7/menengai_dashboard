@@ -171,6 +171,7 @@ Promise.all([
 
   if (infrastructures) {
     infrastructuresLayer = L.geoJSON(infrastructures, {
+       .bindPopup(infrastructuresPopup(feature.properties))
       style: { color: '#50ef50', weight: 0.8, fillOpacity: 0.04, fillColor: '#50ef50' }
     }).addTo(map);
   }
@@ -223,7 +224,10 @@ function plantPopup(p) {
   return `<div class="popup-title">${p.name}</div>
     <div class="popup-row">Capacity: ${p.capacity_mw} MW</div>`;
 }
-
+function infrastructuresPopup(p) {
+  return `<div class="popup-title">${p.Name}</div>
+    <div class="popup-row">Name: ${p.Name} </div>`;
+}
 function activeStatuses() {
   return Array.from(document.querySelectorAll('.statusFilter'))
     .filter(cb => cb.checked)
