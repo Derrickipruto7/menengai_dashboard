@@ -303,3 +303,61 @@ document.getElementById('toggleRoads').addEventListener('change', (e) => {
 document.querySelectorAll('.statusFilter').forEach(cb => {
   cb.addEventListener('change', () => { renderWells(); renderWellList(); });
 });
+/* ==========================================================
+   I ♥ GDC signage layer
+
+   WHERE TO PASTE: at the very bottom of script.js (after all
+   your other code, so `map` already exists).
+
+   ALSO NEEDED:
+   1. data/gdc.geojson            (the point file)
+   2. images/i-love-gdc.gif       (create an "images" folder in the repo)
+   3. In index.html, inside the Layers panel, add this line:
+      <label class="toggle"><input type="checkbox" id="toggleGDC" checked><span>I &hearts; GDC signage</span></label>
+   4. The CSS from gdc-style.css added to the end of style.css
+   ========================================================== */
+
+let gdcLayer;
+
+function gdcIcon() {
+  return L.divIcon({
+    className: 'gdc-marker',
+    html: `<div class="gdc-float">
+             <img class="gdc-gif" src="images/i-love-gdc.gif" alt="I love GDC" draggable="false">
+           </div>
+           <div class="gdc-stem"></div>
+           <div class="gdc-ring"></div>`,
+    iconSize: [150, 95],
+    iconAnchor: [75, 95],      // bottom-centre of the sign sits on the coordinate
+    popupAnchor: [0, -90]
+  });
+}
+
+// Own fetch with its own catch, so a missing file never breaks the rest of the dashboard.
+fetch('data/gdc.geojson')
+  .then(r => {
+    if (!r.ok) throw new Error('gdc.geojson returned HTTP ' + r.status);
+    return r.json();
+  })
+  .then(geojson => {
+    gdcLayer = L.geoJSON(geojson, {
+      pointToLayer: (feature, latlng) =>
+        L.marker(latlng, { icon: gdcIcon(), zIndexOffset: 1000 }),
+      onEachFeature: (feature, layer) => {
+        const p = feature.properties || {};
+        layer.bindPopup(
+          `<div class="popup-title">${p.name || 'I ♥ GDC'}</div>
+           <div class="popup-row">${p.message || ''}</div>`
+        );
+      }
+    }).addTo(map);
+  })
+  .catch(err => console.warn('GDC signage layer not loaded:', err));
+
+const gdcToggle = document.getElementById('toggleGDC');
+if (gdcToggle) {
+  gdcToggle.addEventListener('change', (e) => {
+    if (!gdcLayer) return;
+    e.target.checked ? map.addLayer(gdcLayer) : map.removeLayer(gdcLayer);
+  });
+}
