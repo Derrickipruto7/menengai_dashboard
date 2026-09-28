@@ -226,3 +226,62 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
   .panel { border-right: none; border-bottom: 1px solid var(--line); max-height: 300px; }
   #map { height: 60vh; }
 }
+/* Add to the END of style.css — styles the I ♥ GDC signage marker */
+
+.gdc-marker {
+  background: none;
+  border: none;
+  position: relative;
+}
+
+/* The sign gently floats; the GIF inside handles its own heart pulse. */
+.gdc-float {
+  animation: gdc-bob 2.6s ease-in-out infinite;
+}
+.gdc-gif {
+  display: block;
+  width: 150px;
+  height: 75px;
+  cursor: pointer;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.55));
+  transform-origin: 50% 100%;
+  transition: transform 0.2s ease;
+}
+.gdc-marker:hover .gdc-gif { transform: scale(1.15); }
+
+/* Thin post connecting the sign to the exact map coordinate */
+.gdc-stem {
+  position: absolute;
+  left: 50%;
+  top: 75px;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--magma, #E4572E);
+}
+
+/* Ground ring that ripples outward from the coordinate */
+.gdc-ring {
+  position: absolute;
+  left: 50%;
+  top: 89px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border: 2px solid var(--magma, #E4572E);
+  border-radius: 50%;
+  animation: gdc-ripple 2s ease-out infinite;
+}
+
+@keyframes gdc-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes gdc-ripple {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gdc-float, .gdc-ring { animation: none; }
+}
