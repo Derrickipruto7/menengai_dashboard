@@ -282,6 +282,204 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
   100% { transform: scale(2.6); opacity: 0; }
 }
 
+/* =====================================================
+   3D TERRAIN DASHBOARD CARD
+   ===================================================== */
+
+.terrain-card {
+  position: relative;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(
+    145deg,
+    #101c2b,
+    #14283a
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+
+/* Subtle background glow */
+
+.terrain-card::before {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: -70px;
+  right: -50px;
+  background: rgba(34, 197, 94, 0.12);
+  border-radius: 50%;
+  filter: blur(20px);
+}
+
+
+/* Header */
+
+.terrain-card-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+
+/* Mountain icon */
+
+.terrain-icon {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #1f9d68,
+    #147a52
+  );
+
+  color: white;
+  font-size: 20px;
+
+  box-shadow:
+    0 6px 15px rgba(20, 122, 82, 0.35);
+}
+
+
+/* Heading */
+
+.terrain-card h2 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+
+/* Description */
+
+.terrain-card p {
+  margin: 4px 0 0;
+
+  font-size: 12px;
+
+  color: #9fb0c0;
+}
+
+
+/* =====================================================
+   DASHBOARD BUTTON
+   ===================================================== */
+
+.terrain-dashboard-btn {
+
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 13px 15px;
+
+  box-sizing: border-box;
+
+  border-radius: 11px;
+
+  text-decoration: none;
+
+  color: #ffffff;
+
+  background: linear-gradient(
+    135deg,
+    #16865a,
+    #20a66d
+  );
+
+  border: 1px solid rgba(
+    255,
+    255,
+    255,
+    0.08
+  );
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+  box-shadow:
+    0 5px 14px rgba(
+      0,
+      0,
+      0,
+      0.20
+    );
+}
+
+
+/* Button content */
+
+.terrain-dashboard-btn span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+/* Icons */
+
+.terrain-dashboard-btn i {
+  font-size: 13px;
+}
+
+
+/* Hover */
+
+.terrain-dashboard-btn:hover {
+
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    135deg,
+    #1da66b,
+    #27b879
+  );
+
+  box-shadow:
+    0 8px 20px rgba(
+      32,
+      166,
+      109,
+      0.30
+    );
+}
+
+
+/* Click */
+
+.terrain-dashboard-btn:active {
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gdc-float, .gdc-ring { animation: none; }
 }
