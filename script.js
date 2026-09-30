@@ -124,7 +124,94 @@ function renderResistivityLayer() {
 document.getElementById('toggleResistivity').addEventListener('change', (e) => {
   e.target.checked ? map.addLayer(resistivityLayer) : map.removeLayer(resistivityLayer);
 });
+/* ==========================================================
+   Resistivity GeoTIFF rasters, categorized by year
 
+   WHERE TO PASTE: right after your existing resistivity point
+   layer code in script.js (the block with resistivityColor,
+   renderYearPills, renderResistivityLayer).
+
+   ALSO NEEDED in index.html, inside <head> or before your other
+   Leaflet scripts, add these two lines (georaster libraries):
+
+   <script src="https://unpkg.com/georaster"></script>
+   <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+
+   And in the Resistivity Survey panel section of index.html, add
+   one more checkbox:
+   <label class="toggle"><input type="checkbox" id="toggleResistivityRaster" checked><span>Show resistivity raster</span></label>
+   ========================================================== */
+
+// One entry per year you have a GeoTIFF for. To add a new year:
+// 1. Drop the .tif file into data/resistivity-rasters/
+// 2. Add one line here - that's it, no other code changes needed.
+const resistivityRasters = {
+  2015: 'data/resistivity-rasters/resistivity_2015.tif',
+  2019: 'data/resistivity-rasters/resistivity_2019.tif',
+  2023: 'data/resistivity-rasters/resistivity_2023.tif'
+};
+
+let resistivityRasterLayer = null;
+const georasterCache = {}; // avoids re-fetching the same file if you flip years back and forth
+
+function loadResistivityRaster(year) {
+  // Remove whatever raster is currently showing before loading the new one
+  if (resistivityRasterLayer) {
+    map.removeLayer(resistivityRasterLayer);
+    resistivityRasterLayer = null;
+  }
+
+  const url = resistivityRasters[year];
+  if (!url) return; // no raster on file for this year - that's fine, just skip it
+
+  const showRaster = document.getElementById('toggleResistivityRaster')?.checked ?? true;
+  if (!showRaster) return;
+
+  const buildLayer = (georaster) => {
+    resistivityRasterLayer = new GeoRasterLayer({
+      georaster: georaster,
+      opacity: 0.65,
+      resolution: 128,
+      pixelValuesToColorFn: (values) => {
+        const v = values[0];
+        // treat common "no data" sentinel values as transparent
+        if (v === undefined || v === null || v <= -9999) return null;
+        return resistivityColor(v); // reuses the same classed color scale as the points
+      }
+    });
+    resistivityRasterLayer.addTo(map);
+  };
+
+  if (georasterCache[year]) {
+    buildLayer(georasterCache[year]);
+    return;
+  }
+
+  fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error(`${url} returned HTTP ${r.status}`);
+      return r.arrayBuffer();
+    })
+    .then(arrayBuffer => parseGeoraster(arrayBuffer))
+    .then(georaster => {
+      georasterCache[year] = georaster;
+      buildLayer(georaster);
+    })
+    .catch(err => console.warn(`Resistivity raster not loaded for ${year}:`, err));
+}
+
+// Hook into the existing year-pill click handler so switching years
+// updates BOTH the point markers and the raster together.
+const _originalRenderResistivityLayer = renderResistivityLayer;
+renderResistivityLayer = function () {
+  _originalRenderResistivityLayer();
+  loadResistivityRaster(selectedYear);
+};
+
+const rasterToggle = document.getElementById('toggleResistivityRaster');
+if (rasterToggle) {
+  rasterToggle.addEventListener('change', () => loadResistivityRaster(selectedYear));
+}
 let boundaryLayer, plantsLayer, wellsLayer, roadsLayer, infrastructuresLayer;
 let wellsData = [];
 
