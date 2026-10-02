@@ -3,9 +3,6 @@
 "name": "gdc",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
-{ "type": "Feature", "properties": { "Name": Menengai }, "geometry": { "type": "Point", "coordinates": [ 36.059616045176512, -0.199847112848561 ] } }
-]
-}
-{ "type": "Feature", "properties": { "Name": Suswa }, "geometry": { "type": "Point", "coordinates": [ 36.351906183037599, -1.15089548607488 ] } }
+{ "type": "Feature", "properties": { "Name": null }, "geometry": { "type": "Point", "coordinates": [ 36.059616045176512, -0.199847112848561 ] } }
 ]
 }
