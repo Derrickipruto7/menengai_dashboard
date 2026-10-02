@@ -6,6 +6,3 @@
 { "type": "Feature", "properties": { "Name": null }, "geometry": { "type": "Point", "coordinates": [ 36.059616045176512, -0.199847112848561 ] } }
 ]
 }
-{ "type": "Feature", "properties": { "Name": null }, "geometry": { "type": "Point", "coordinates": [ 36.351906183037599, -1.15089548607488 ] } }
-]
-}
