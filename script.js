@@ -557,27 +557,38 @@ function captureMapScreenshot(bounds) {
       captureStarted = true;
 
       setTimeout(() => {
-        const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
-        const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
-        const x = Math.max(0, Math.round(topLeft.x));
-        const y = Math.max(0, Math.round(topLeft.y));
-        const width = Math.max(1, Math.round(bottomRight.x - topLeft.x));
-        const height = Math.max(1, Math.round(bottomRight.y - topLeft.y));
-
         html2canvas(map.getContainer(), {
           useCORS: true,
-          x, y, width, height,
           scale: 1,
           logging: false,
           ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
-        }).then((canvas) => {
+        }).then((fullCanvas) => {
           if (settled) return;
           clearTimeout(overallTimeout);
-          canvas.toBlob((blob) => {
+
+          try {
+            const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+            const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+            const sx = Math.max(0, Math.round(topLeft.x));
+            const sy = Math.max(0, Math.round(topLeft.y));
+            const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
+            const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
+
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = sw;
+            cropCanvas.height = sh;
+            cropCanvas.getContext('2d').drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+            cropCanvas.toBlob((blob) => {
+              settled = true;
+              restoreView();
+              blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
+            }, 'image/jpeg', 0.92);
+          } catch (e) {
             settled = true;
             restoreView();
-            blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
-          }, 'image/jpeg', 0.92);
+            reject(e);
+          }
         }).catch((err) => {
           if (settled) return;
           settled = true;
@@ -593,7 +604,6 @@ function captureMapScreenshot(bounds) {
     setTimeout(startCapture, 400);
   });
 }
-
 // ---------------- Main export ----------------
 downloadExportBtn.addEventListener('click', runExport);
 
