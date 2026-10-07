@@ -673,23 +673,29 @@ async function runExport() {
 
   let addedAny = false;
 
-  selected.filter((k) => k !== 'imagery').forEach((key) => {
+    for (const key of selected.filter((k) => k !== 'imagery')) {
     const layer = layerMap[key];
-    if (!layer) return; // this layer never loaded (e.g. optional roads/infrastructure file missing)
+    if (!layer) continue; // this layer never loaded (e.g. optional roads/infrastructure file missing)
     let fc;
     try {
       fc = layer.toGeoJSON();
     } catch (e) {
       console.warn('Could not read layer for export:', key, e);
-      return;
+      continue;
     }
     const clipped = clipFeatureCollectionToBBox(fc, drawnBounds);
     if (clipped.features.length) {
-      zip.file(`${key}.geojson`, JSON.stringify(clipped, null, 2));
-      addedAny = true;
+      try {
+        const shpZipBytes = await shpwrite.zip(clipped);
+        zip.file(`${key}_shapefile.zip`, shpZipBytes);
+        addedAny = true;
+      } catch (e) {
+        console.warn(`Could not build shapefile for ${key}, falling back to GeoJSON:`, e);
+        zip.file(`${key}.geojson`, JSON.stringify(clipped, null, 2));
+        addedAny = true;
+      }
     }
-  });
-
+  }
    if (selected.includes('imagery')) {
     exportStatusEl.textContent = 'Capturing imagery...';
     try {
