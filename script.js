@@ -690,7 +690,7 @@ async function runExport() {
     }
   });
 
-  if (selected.includes('imagery')) {
+   if (selected.includes('imagery')) {
     exportStatusEl.textContent = 'Capturing imagery...';
     try {
       const blob = await captureImageryBlob(drawnBounds);
@@ -698,10 +698,9 @@ async function runExport() {
       addedAny = true;
     } catch (err) {
       console.warn('Imagery capture failed:', err);
-      exportStatusEl.textContent = 'Imagery capture blocked by the current basemap\'s CORS policy — exported vector layers only. Try switching to the Satellite imagery basemap and exporting again.';
+      exportStatusEl.textContent = `Imagery capture failed: ${err.message || err}`;
     }
   }
-
   if (!addedAny) {
     exportStatusEl.textContent = 'Nothing to export — check your layer selection and your box.';
     downloadExportBtn.disabled = false;
