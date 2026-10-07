@@ -538,70 +538,40 @@ map.on('mouseup', (e) => {
 // ---------------- Screenshot capture ----------------
 function captureMapScreenshot(bounds) {
   return new Promise((resolve, reject) => {
-    const prevCenter = map.getCenter();
-    const prevZoom = map.getZoom();
-    function restoreView() { map.setView(prevCenter, prevZoom, { animate: false }); }
-
-    let settled = false;
-    let captureStarted = false;
-
     const overallTimeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      restoreView();
       reject(new Error('Screenshot capture timed out after 25 seconds'));
     }, 25000);
 
-    function startCapture() {
-      if (captureStarted) return;
-      captureStarted = true;
+    html2canvas(map.getContainer(), {
+      useCORS: true,
+      scale: 1,
+      logging: false,
+      ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
+    }).then((fullCanvas) => {
+      clearTimeout(overallTimeout);
+      try {
+        const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+        const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+        const sx = Math.max(0, Math.round(topLeft.x));
+        const sy = Math.max(0, Math.round(topLeft.y));
+        const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
+        const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
 
-      setTimeout(() => {
-        html2canvas(map.getContainer(), {
-          useCORS: true,
-          scale: 1,
-          logging: false,
-          ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
-        }).then((fullCanvas) => {
-          if (settled) return;
-          clearTimeout(overallTimeout);
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = sw;
+        cropCanvas.height = sh;
+        cropCanvas.getContext('2d').drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
 
-          try {
-            const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
-            const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
-            const sx = Math.max(0, Math.round(topLeft.x));
-            const sy = Math.max(0, Math.round(topLeft.y));
-            const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
-            const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
-
-            const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = sw;
-            cropCanvas.height = sh;
-            cropCanvas.getContext('2d').drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
-
-            cropCanvas.toBlob((blob) => {
-              settled = true;
-              restoreView();
-              blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
-            }, 'image/jpeg', 0.92);
-          } catch (e) {
-            settled = true;
-            restoreView();
-            reject(e);
-          }
-        }).catch((err) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(overallTimeout);
-          restoreView();
-          reject(err);
-        });
-      }, 700);
-    }
-
-    map.once('moveend', startCapture);
-    map.fitBounds(bounds, { animate: false, padding: [20, 20] });
-    setTimeout(startCapture, 400);
+        cropCanvas.toBlob((blob) => {
+          blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
+        }, 'image/jpeg', 0.92);
+      } catch (e) {
+        reject(e);
+      }
+    }).catch((err) => {
+      clearTimeout(overallTimeout);
+      reject(err);
+    });
   });
 }
 // ---------------- Main export ----------------
