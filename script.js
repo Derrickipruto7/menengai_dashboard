@@ -549,43 +549,41 @@ function captureMapScreenshot(bounds) {
       if (settled) return;
       settled = true;
       restoreView();
-      reject(new Error('Screenshot capture timed out after 20 seconds'));
-    }, 20000);
+      reject(new Error('Screenshot capture timed out after 25 seconds'));
+    }, 25000);
 
     function startCapture() {
       if (captureStarted) return;
       captureStarted = true;
 
       setTimeout(() => {
-        leafletImage(map, (err, canvas) => {
+        const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+        const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+        const x = Math.max(0, Math.round(topLeft.x));
+        const y = Math.max(0, Math.round(topLeft.y));
+        const width = Math.max(1, Math.round(bottomRight.x - topLeft.x));
+        const height = Math.max(1, Math.round(bottomRight.y - topLeft.y));
+
+        html2canvas(map.getContainer(), {
+          useCORS: true,
+          x, y, width, height,
+          scale: 1,
+          logging: false,
+          ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
+        }).then((canvas) => {
           if (settled) return;
           clearTimeout(overallTimeout);
-
-          if (err) { settled = true; restoreView(); reject(err); return; }
-
-          try {
-            const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
-            const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
-            const sx = Math.max(0, Math.round(topLeft.x));
-            const sy = Math.max(0, Math.round(topLeft.y));
-            const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
-            const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
-
-            const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = sw;
-            cropCanvas.height = sh;
-            cropCanvas.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
-
-            cropCanvas.toBlob((blob) => {
-              settled = true;
-              restoreView();
-              blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
-            }, 'image/jpeg', 0.92);
-          } catch (e) {
+          canvas.toBlob((blob) => {
             settled = true;
             restoreView();
-            reject(e);
-          }
+            blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
+          }, 'image/jpeg', 0.92);
+        }).catch((err) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(overallTimeout);
+          restoreView();
+          reject(err);
         });
       }, 700);
     }
