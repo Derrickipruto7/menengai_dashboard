@@ -536,41 +536,59 @@ map.on('mouseup', (e) => {
 });
 
 // ---------------- Screenshot capture ----------------
+function waitForMapImages(maxWaitMs = 4000) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    function check() {
+      const imgs = map.getContainer().querySelectorAll('img');
+      const allLoaded = Array.from(imgs).every(img => img.complete && img.naturalWidth > 0);
+      if (allLoaded || Date.now() - start > maxWaitMs) {
+        resolve();
+      } else {
+        setTimeout(check, 150);
+      }
+    }
+    check();
+  });
+}
+
 function captureMapScreenshot(bounds) {
   return new Promise((resolve, reject) => {
     const overallTimeout = setTimeout(() => {
       reject(new Error('Screenshot capture timed out after 25 seconds'));
     }, 25000);
 
-    html2canvas(map.getContainer(), {
-      useCORS: true,
-      scale: 1,
-      logging: false,
-      ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
-    }).then((fullCanvas) => {
-      clearTimeout(overallTimeout);
-      try {
-        const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
-        const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
-        const sx = Math.max(0, Math.round(topLeft.x));
-        const sy = Math.max(0, Math.round(topLeft.y));
-        const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
-        const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
+    waitForMapImages().then(() => {
+      html2canvas(map.getContainer(), {
+        useCORS: true,
+        scale: 1,
+        logging: false,
+        ignoreElements: (el) => el.classList && el.classList.contains('leaflet-control-container')
+      }).then((fullCanvas) => {
+        clearTimeout(overallTimeout);
+        try {
+          const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+          const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+          const sx = Math.max(0, Math.round(topLeft.x));
+          const sy = Math.max(0, Math.round(topLeft.y));
+          const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
+          const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
 
-        const cropCanvas = document.createElement('canvas');
-        cropCanvas.width = sw;
-        cropCanvas.height = sh;
-        cropCanvas.getContext('2d').drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = sw;
+          cropCanvas.height = sh;
+          cropCanvas.getContext('2d').drawImage(fullCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
 
-        cropCanvas.toBlob((blob) => {
-          blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
-        }, 'image/jpeg', 0.92);
-      } catch (e) {
-        reject(e);
-      }
-    }).catch((err) => {
-      clearTimeout(overallTimeout);
-      reject(err);
+          cropCanvas.toBlob((blob) => {
+            blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
+          }, 'image/jpeg', 0.92);
+        } catch (e) {
+          reject(e);
+        }
+      }).catch((err) => {
+        clearTimeout(overallTimeout);
+        reject(err);
+      });
     });
   });
 }
