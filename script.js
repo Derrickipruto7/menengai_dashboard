@@ -629,7 +629,7 @@ function captureImageryBlob(bounds) {
               settled = true;
               restoreView();
               blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
-            }, 'image/png');
+            }, 'image/jpeg', 0.92);
           } catch (e) {
             settled = true;
             restoreView();
@@ -700,7 +700,7 @@ async function runExport() {
     exportStatusEl.textContent = 'Capturing imagery...';
     try {
       const blob = await captureImageryBlob(drawnBounds);
-      zip.file('satellite_imagery.png', blob);
+      zip.file('satellite_imagery.jpg', blob);
       addedAny = true;
     } catch (err) {
       console.warn('Imagery capture failed:', err);
