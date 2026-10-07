@@ -535,51 +535,8 @@ map.on('mouseup', (e) => {
   downloadExportBtn.disabled = false;
 });
 
-// ---------------- Clipping ----------------
-function clipFeatureCollectionToBBox(fc, bounds) {
-  const west = bounds.getWest(), south = bounds.getSouth();
-  const east = bounds.getEast(), north = bounds.getNorth();
-  const turfBBox = [west, south, east, north];
-  const out = { type: 'FeatureCollection', features: [] };
-
-  (fc.features || []).forEach((f) => {
-    if (!f.geometry) return;
-
-    if (f.geometry.type === 'Point') {
-      const [lng, lat] = f.geometry.coordinates;
-      if (lng >= west && lng <= east && lat >= south && lat <= north) out.features.push(f);
-      return;
-    }
-
-    try {
-      const clipped = turf.bboxClip(f, turfBBox);
-      if (clipped.geometry && clipped.geometry.coordinates && clipped.geometry.coordinates.length) {
-        clipped.properties = f.properties;
-        out.features.push(clipped);
-      }
-    } catch (e) {
-      console.warn('Could not clip a feature (unsupported geometry type) - skipped:', e);
-    }
-  });
-
-  return out;
-}
-
-// ---------------- Imagery capture ----------------
-// ---------------- Imagery capture (FIXED: no longer hangs) ----------------
-// Replace your existing captureImageryBlob function with this one.
-//
-// What was wrong: it waited on map.once('moveend', ...) before starting the
-// screenshot, but fitBounds() doesn't fire 'moveend' at all if the map was
-// already showing that area - so if your drawn box was already visible,
-// the capture would wait forever for an event that was never coming.
-//
-// The fix: start the capture either when 'moveend' fires, OR after a short
-// fallback delay, whichever comes first - with a guard so it only actually
-// runs once. Also added an overall 20-second timeout so a flaky tile or
-// network issue surfaces as a clear error instead of an endless spinner.
-
-function captureImageryBlob(bounds) {
+// ---------------- Screenshot capture ----------------
+function captureMapScreenshot(bounds) {
   return new Promise((resolve, reject) => {
     const prevCenter = map.getCenter();
     const prevZoom = map.getZoom();
@@ -592,25 +549,19 @@ function captureImageryBlob(bounds) {
       if (settled) return;
       settled = true;
       restoreView();
-      reject(new Error('Imagery capture timed out after 20 seconds'));
+      reject(new Error('Screenshot capture timed out after 20 seconds'));
     }, 20000);
 
     function startCapture() {
       if (captureStarted) return;
       captureStarted = true;
 
-      // Give tiles a moment to finish loading after the programmatic fit.
       setTimeout(() => {
         leafletImage(map, (err, canvas) => {
           if (settled) return;
           clearTimeout(overallTimeout);
 
-          if (err) {
-            settled = true;
-            restoreView();
-            reject(err);
-            return;
-          }
+          if (err) { settled = true; restoreView(); reject(err); return; }
 
           try {
             const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
@@ -633,7 +584,7 @@ function captureImageryBlob(bounds) {
           } catch (e) {
             settled = true;
             restoreView();
-            reject(e); // typically a tainted-canvas error from a non-CORS tile source
+            reject(e);
           }
         });
       }, 700);
@@ -641,11 +592,6 @@ function captureImageryBlob(bounds) {
 
     map.once('moveend', startCapture);
     map.fitBounds(bounds, { animate: false, padding: [20, 20] });
-
-    // Fallback: if the box was already fully in view, fitBounds won't move
-    // the map, so 'moveend' never fires. Start the capture anyway shortly
-    // after - the captureStarted guard above makes this safe even if
-    // 'moveend' DOES also fire around the same time.
     setTimeout(startCapture, 400);
   });
 }
@@ -656,11 +602,7 @@ downloadExportBtn.addEventListener('click', runExport);
 async function runExport() {
   if (!drawnBounds) return;
   downloadExportBtn.disabled = true;
-  exportStatusEl.textContent = 'Preparing export...';
-
-  const zip = new JSZip();
-  const selected = Array.from(document.querySelectorAll('.exportLayer'))
-    .filter((cb) => cb.checked).map((cb) => cb.value);
+  exportStatusEl.textContent = 'Capturing screenshot...';
 
   const layerMap = {
     wells: wellsLayer,
@@ -671,60 +613,41 @@ async function runExport() {
     resistivity: typeof resistivityLayer !== 'undefined' ? resistivityLayer : null
   };
 
-  let addedAny = false;
+  const selected = Array.from(document.querySelectorAll('.exportLayer'))
+    .filter((cb) => cb.checked).map((cb) => cb.value);
 
-    for (const key of selected.filter((k) => k !== 'imagery')) {
-    const layer = layerMap[key];
-    if (!layer) continue; // this layer never loaded (e.g. optional roads/infrastructure file missing)
-    let fc;
-    try {
-      fc = layer.toGeoJSON();
-    } catch (e) {
-      console.warn('Could not read layer for export:', key, e);
-      continue;
-    }
-    const clipped = clipFeatureCollectionToBBox(fc, drawnBounds);
-    if (clipped.features.length) {
-      try {
-        const shpZipBytes = await shpwrite.zip(clipped);
-        zip.file(`${key}_shapefile.zip`, shpZipBytes);
-        addedAny = true;
-      } catch (e) {
-        console.warn(`Could not build shapefile for ${key}, falling back to GeoJSON:`, e);
-        zip.file(`${key}.geojson`, JSON.stringify(clipped, null, 2));
-        addedAny = true;
-      }
-    }
-  }
-   if (selected.includes('imagery')) {
-    exportStatusEl.textContent = 'Capturing imagery...';
-    try {
-      const blob = await captureImageryBlob(drawnBounds);
-      zip.file('satellite_imagery.jpg', blob);
-      addedAny = true;
-    } catch (err) {
-      console.warn('Imagery capture failed:', err);
-      exportStatusEl.textContent = `Imagery capture failed: ${err.message || err}`;
-    }
-  }
-  if (!addedAny) {
-    exportStatusEl.textContent = 'Nothing to export — check your layer selection and your box.';
+  // Temporarily show only the checked layers for the screenshot, then
+  // put everything back to how it was once the capture is done.
+  const originalState = [];
+  Object.entries(layerMap).forEach(([key, layer]) => {
+    if (!layer) return;
+    const wasOn = map.hasLayer(layer);
+    originalState.push({ layer, wasOn });
+    const shouldBeOn = selected.includes(key);
+    if (shouldBeOn && !wasOn) map.addLayer(layer);
+    if (!shouldBeOn && wasOn) map.removeLayer(layer);
+  });
+
+  try {
+    const blob = await captureMapScreenshot(drawnBounds);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `menengai-export-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    exportStatusEl.textContent = 'Screenshot downloaded.';
+  } catch (err) {
+    console.warn('Screenshot capture failed:', err);
+    exportStatusEl.textContent = `Screenshot capture failed: ${err.message || err}`;
+  } finally {
+    originalState.forEach(({ layer, wasOn }) => {
+      const isOn = map.hasLayer(layer);
+      if (wasOn && !isOn) map.addLayer(layer);
+      if (!wasOn && isOn) map.removeLayer(layer);
+    });
     downloadExportBtn.disabled = false;
-    return;
   }
-
-  const content = await zip.generateAsync({ type: 'blob' });
-  const url = URL.createObjectURL(content);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `menengai-export-${Date.now()}.zip`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-
-  if (!exportStatusEl.textContent.includes('blocked')) {
-    exportStatusEl.textContent = 'Export downloaded.';
-  }
-  downloadExportBtn.disabled = false;
 }
