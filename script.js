@@ -606,6 +606,9 @@ async function runExport() {
     if (!shouldBeOn && wasOn) map.removeLayer(layer);
   });
 
+  const bboxWasOnMap = bboxLayer && map.hasLayer(bboxLayer);
+  if (bboxWasOnMap) map.removeLayer(bboxLayer);
+
   try {
     const blob = await captureMapScreenshot(drawnBounds);
     const url = URL.createObjectURL(blob);
@@ -620,12 +623,13 @@ async function runExport() {
   } catch (err) {
     console.warn('Screenshot capture failed:', err);
     exportStatusEl.textContent = `Screenshot capture failed: ${err.message || err}`;
-  } finally {
+    } finally {
     originalState.forEach(({ layer, wasOn }) => {
       const isOn = map.hasLayer(layer);
       if (wasOn && !isOn) map.addLayer(layer);
       if (!wasOn && isOn) map.removeLayer(layer);
     });
+    if (bboxWasOnMap && bboxLayer) map.addLayer(bboxLayer);
     downloadExportBtn.disabled = false;
   }
 }
