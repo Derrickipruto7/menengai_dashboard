@@ -582,17 +582,28 @@ async function runExport() {
   downloadExportBtn.disabled = true;
   exportStatusEl.textContent = 'Capturing screenshot...';
 
-  const layerMap = {
-    wells: wellsLayer,
-    powerStations: plantsLayer,
-    boundary: boundaryLayer,
-    roads: typeof roadsLayer !== 'undefined' ? roadsLayer : null,
-    infrastructure: typeof infrastructuresLayer !== 'undefined' ? infrastructuresLayer : null,
-    resistivity: typeof resistivityLayer !== 'undefined' ? resistivityLayer : null
-  };
+  const bboxWasOnMap = bboxLayer && map.hasLayer(bboxLayer);
+  if (bboxWasOnMap) map.removeLayer(bboxLayer);
 
-  const selected = Array.from(document.querySelectorAll('.exportLayer'))
-    .filter((cb) => cb.checked).map((cb) => cb.value);
+  try {
+    const blob = await captureMapScreenshot(drawnBounds);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `menengai-export-${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    exportStatusEl.textContent = 'Screenshot downloaded.';
+  } catch (err) {
+    console.warn('Screenshot capture failed:', err);
+    exportStatusEl.textContent = `Screenshot capture failed: ${err.message || err}`;
+  } finally {
+    if (bboxWasOnMap && bboxLayer) map.addLayer(bboxLayer);
+    downloadExportBtn.disabled = false;
+  }
+}
 
   // Temporarily show only the checked layers for the screenshot, then
   // put everything back to how it was once the capture is done.
