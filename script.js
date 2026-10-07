@@ -448,3 +448,233 @@ if (gdcToggle) {
     e.target.checked ? map.addLayer(gdcLayer) : map.removeLayer(gdcLayer);
   });
 }
+/* ==========================================================
+   Bounding-box export tool
+   Draw a rectangle on the map, pick which layers to include,
+   download a .zip containing:
+     - a clipped GeoJSON file per selected vector layer
+     - a cropped PNG of the current satellite basemap (optional)
+
+   WHERE TO PASTE: at the very bottom of script.js (needs `map`
+   and your existing layer variables - wellsLayer, plantsLayer,
+   boundaryLayer, roadsLayer, infrastructuresLayer,
+   resistivityLayer - to already exist).
+
+   ALSO NEEDED in index.html, before script.js:
+   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+   <script src="https://unpkg.com/leaflet-image@0.4.0/leaflet-image.js"></script>
+   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+   AND the export-tool-panel.html snippet added to the sidebar,
+   and export-tool-style.css added to style.css.
+   ========================================================== */
+
+let drawing = false;
+let startLatLng = null;
+let bboxLayer = null;
+let drawnBounds = null;
+
+const startDrawBtn = document.getElementById('startDrawBtn');
+const bboxStatusEl = document.getElementById('bboxStatus');
+const downloadExportBtn = document.getElementById('downloadExportBtn');
+const exportStatusEl = document.getElementById('exportStatus');
+
+startDrawBtn.addEventListener('click', () => {
+  drawing = true;
+  startLatLng = null;
+  map.dragging.disable();
+  map.getContainer().style.cursor = 'crosshair';
+  bboxStatusEl.textContent = 'Click and drag on the map to draw a box.';
+  if (bboxLayer) { map.removeLayer(bboxLayer); bboxLayer = null; }
+  drawnBounds = null;
+  downloadExportBtn.disabled = true;
+  exportStatusEl.textContent = '';
+});
+
+map.on('mousedown', (e) => {
+  if (!drawing) return;
+  startLatLng = e.latlng;
+  if (bboxLayer) map.removeLayer(bboxLayer);
+  bboxLayer = L.rectangle([startLatLng, startLatLng], {
+    color: '#4FA8E0', weight: 2, fillOpacity: 0.08
+  }).addTo(map);
+  map.on('mousemove', onDrawMove);
+});
+
+function onDrawMove(e) {
+  if (!drawing || !startLatLng) return;
+  bboxLayer.setBounds(L.latLngBounds(startLatLng, e.latlng));
+}
+
+map.on('mouseup', (e) => {
+  if (!drawing || !startLatLng) return;
+  const bounds = L.latLngBounds(startLatLng, e.latlng);
+  map.off('mousemove', onDrawMove);
+  drawing = false;
+  map.dragging.enable();
+  map.getContainer().style.cursor = '';
+
+  if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+    bboxStatusEl.textContent = 'That was just a click, not a drag — try again, holding the mouse down while you drag.';
+    if (bboxLayer) { map.removeLayer(bboxLayer); bboxLayer = null; }
+    startLatLng = null;
+    return;
+  }
+
+  drawnBounds = bounds;
+  bboxLayer.setBounds(drawnBounds);
+  startLatLng = null;
+
+  const ne = drawnBounds.getNorthEast(), sw = drawnBounds.getSouthWest();
+  bboxStatusEl.innerHTML =
+    `Box set: <span class="mono">${sw.lat.toFixed(4)}, ${sw.lng.toFixed(4)}</span> to <span class="mono">${ne.lat.toFixed(4)}, ${ne.lng.toFixed(4)}</span>`;
+  downloadExportBtn.disabled = false;
+});
+
+// ---------------- Clipping ----------------
+function clipFeatureCollectionToBBox(fc, bounds) {
+  const west = bounds.getWest(), south = bounds.getSouth();
+  const east = bounds.getEast(), north = bounds.getNorth();
+  const turfBBox = [west, south, east, north];
+  const out = { type: 'FeatureCollection', features: [] };
+
+  (fc.features || []).forEach((f) => {
+    if (!f.geometry) return;
+
+    if (f.geometry.type === 'Point') {
+      const [lng, lat] = f.geometry.coordinates;
+      if (lng >= west && lng <= east && lat >= south && lat <= north) out.features.push(f);
+      return;
+    }
+
+    try {
+      const clipped = turf.bboxClip(f, turfBBox);
+      if (clipped.geometry && clipped.geometry.coordinates && clipped.geometry.coordinates.length) {
+        clipped.properties = f.properties;
+        out.features.push(clipped);
+      }
+    } catch (e) {
+      console.warn('Could not clip a feature (unsupported geometry type) - skipped:', e);
+    }
+  });
+
+  return out;
+}
+
+// ---------------- Imagery capture ----------------
+function captureImageryBlob(bounds) {
+  return new Promise((resolve, reject) => {
+    const prevCenter = map.getCenter();
+    const prevZoom = map.getZoom();
+
+    function restoreView() {
+      map.setView(prevCenter, prevZoom, { animate: false });
+    }
+
+    map.once('moveend', () => {
+      // Give tiles a moment to finish loading after the programmatic fit.
+      setTimeout(() => {
+        leafletImage(map, (err, canvas) => {
+          if (err) { restoreView(); reject(err); return; }
+          try {
+            const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
+            const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
+            const sx = Math.max(0, Math.round(topLeft.x));
+            const sy = Math.max(0, Math.round(topLeft.y));
+            const sw = Math.max(1, Math.round(bottomRight.x - topLeft.x));
+            const sh = Math.max(1, Math.round(bottomRight.y - topLeft.y));
+
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = sw;
+            cropCanvas.height = sh;
+            cropCanvas.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+            cropCanvas.toBlob((blob) => {
+              restoreView();
+              blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
+            }, 'image/png');
+          } catch (e) {
+            restoreView();
+            reject(e); // usually a tainted-canvas error from a non-CORS tile source
+          }
+        });
+      }, 600);
+    });
+
+    map.fitBounds(bounds, { animate: false, padding: [20, 20] });
+  });
+}
+
+// ---------------- Main export ----------------
+downloadExportBtn.addEventListener('click', runExport);
+
+async function runExport() {
+  if (!drawnBounds) return;
+  downloadExportBtn.disabled = true;
+  exportStatusEl.textContent = 'Preparing export...';
+
+  const zip = new JSZip();
+  const selected = Array.from(document.querySelectorAll('.exportLayer'))
+    .filter((cb) => cb.checked).map((cb) => cb.value);
+
+  const layerMap = {
+    wells: wellsLayer,
+    powerStations: plantsLayer,
+    boundary: boundaryLayer,
+    roads: typeof roadsLayer !== 'undefined' ? roadsLayer : null,
+    infrastructure: typeof infrastructuresLayer !== 'undefined' ? infrastructuresLayer : null,
+    resistivity: typeof resistivityLayer !== 'undefined' ? resistivityLayer : null
+  };
+
+  let addedAny = false;
+
+  selected.filter((k) => k !== 'imagery').forEach((key) => {
+    const layer = layerMap[key];
+    if (!layer) return; // this layer never loaded (e.g. optional roads/infrastructure file missing)
+    let fc;
+    try {
+      fc = layer.toGeoJSON();
+    } catch (e) {
+      console.warn('Could not read layer for export:', key, e);
+      return;
+    }
+    const clipped = clipFeatureCollectionToBBox(fc, drawnBounds);
+    if (clipped.features.length) {
+      zip.file(`${key}.geojson`, JSON.stringify(clipped, null, 2));
+      addedAny = true;
+    }
+  });
+
+  if (selected.includes('imagery')) {
+    exportStatusEl.textContent = 'Capturing imagery...';
+    try {
+      const blob = await captureImageryBlob(drawnBounds);
+      zip.file('satellite_imagery.png', blob);
+      addedAny = true;
+    } catch (err) {
+      console.warn('Imagery capture failed:', err);
+      exportStatusEl.textContent = 'Imagery capture blocked by the current basemap\'s CORS policy — exported vector layers only. Try switching to the Satellite imagery basemap and exporting again.';
+    }
+  }
+
+  if (!addedAny) {
+    exportStatusEl.textContent = 'Nothing to export — check your layer selection and your box.';
+    downloadExportBtn.disabled = false;
+    return;
+  }
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `menengai-export-${Date.now()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  if (!exportStatusEl.textContent.includes('blocked')) {
+    exportStatusEl.textContent = 'Export downloaded.';
+  }
+  downloadExportBtn.disabled = false;
+}
