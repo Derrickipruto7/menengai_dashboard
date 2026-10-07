@@ -562,20 +562,52 @@ function clipFeatureCollectionToBBox(fc, bounds) {
 }
 
 // ---------------- Imagery capture ----------------
+// ---------------- Imagery capture (FIXED: no longer hangs) ----------------
+// Replace your existing captureImageryBlob function with this one.
+//
+// What was wrong: it waited on map.once('moveend', ...) before starting the
+// screenshot, but fitBounds() doesn't fire 'moveend' at all if the map was
+// already showing that area - so if your drawn box was already visible,
+// the capture would wait forever for an event that was never coming.
+//
+// The fix: start the capture either when 'moveend' fires, OR after a short
+// fallback delay, whichever comes first - with a guard so it only actually
+// runs once. Also added an overall 20-second timeout so a flaky tile or
+// network issue surfaces as a clear error instead of an endless spinner.
+
 function captureImageryBlob(bounds) {
   return new Promise((resolve, reject) => {
     const prevCenter = map.getCenter();
     const prevZoom = map.getZoom();
+    function restoreView() { map.setView(prevCenter, prevZoom, { animate: false }); }
 
-    function restoreView() {
-      map.setView(prevCenter, prevZoom, { animate: false });
-    }
+    let settled = false;
+    let captureStarted = false;
 
-    map.once('moveend', () => {
+    const overallTimeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      restoreView();
+      reject(new Error('Imagery capture timed out after 20 seconds'));
+    }, 20000);
+
+    function startCapture() {
+      if (captureStarted) return;
+      captureStarted = true;
+
       // Give tiles a moment to finish loading after the programmatic fit.
       setTimeout(() => {
         leafletImage(map, (err, canvas) => {
-          if (err) { restoreView(); reject(err); return; }
+          if (settled) return;
+          clearTimeout(overallTimeout);
+
+          if (err) {
+            settled = true;
+            restoreView();
+            reject(err);
+            return;
+          }
+
           try {
             const topLeft = map.latLngToContainerPoint(bounds.getNorthWest());
             const bottomRight = map.latLngToContainerPoint(bounds.getSouthEast());
@@ -590,18 +622,27 @@ function captureImageryBlob(bounds) {
             cropCanvas.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
 
             cropCanvas.toBlob((blob) => {
+              settled = true;
               restoreView();
               blob ? resolve(blob) : reject(new Error('Canvas produced no image data'));
             }, 'image/png');
           } catch (e) {
+            settled = true;
             restoreView();
-            reject(e); // usually a tainted-canvas error from a non-CORS tile source
+            reject(e); // typically a tainted-canvas error from a non-CORS tile source
           }
         });
-      }, 600);
-    });
+      }, 700);
+    }
 
+    map.once('moveend', startCapture);
     map.fitBounds(bounds, { animate: false, padding: [20, 20] });
+
+    // Fallback: if the box was already fully in view, fitBounds won't move
+    // the map, so 'moveend' never fires. Start the capture anyway shortly
+    // after - the captureStarted guard above makes this safe even if
+    // 'moveend' DOES also fire around the same time.
+    setTimeout(startCapture, 400);
   });
 }
 
