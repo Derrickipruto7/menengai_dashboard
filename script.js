@@ -552,10 +552,10 @@ function waitForMapImages(maxWaitMs = 4000) {
   });
 }
 
-function captureMapScreenshot(bounds) {
+function captureMapImage(bounds) {
   return new Promise((resolve, reject) => {
     const overallTimeout = setTimeout(() => {
-      reject(new Error('Screenshot capture timed out after 25 seconds'));
+      reject(new Error('Image capture timed out after 25 seconds'));
     }, 25000);
 
     waitForMapImages().then(() => {
@@ -598,7 +598,7 @@ downloadExportBtn.addEventListener('click', runExport);
 async function runExport() {
   if (!drawnBounds) return;
   downloadExportBtn.disabled = true;
-  exportStatusEl.textContent = 'Capturing screenshot...';
+  exportStatusEl.textContent = 'Capturing Image...';
 
   const bboxWasOnMap = bboxLayer && map.hasLayer(bboxLayer);
   if (bboxWasOnMap) map.removeLayer(bboxLayer);
@@ -613,10 +613,10 @@ async function runExport() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    exportStatusEl.textContent = 'Screenshot downloaded.';
+    exportStatusEl.textContent = 'Image downloaded.';
   } catch (err) {
-    console.warn('Screenshot capture failed:', err);
-    exportStatusEl.textContent = `Screenshot capture failed: ${err.message || err}`;
+    console.warn('Image capture failed:', err);
+    exportStatusEl.textContent = `Image capture failed: ${err.message || err}`;
   } finally {
     if (bboxWasOnMap && bboxLayer) map.addLayer(bboxLayer);
     downloadExportBtn.disabled = false;
