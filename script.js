@@ -604,7 +604,7 @@ async function runExport() {
   if (bboxWasOnMap) map.removeLayer(bboxLayer);
 
   try {
-    const blob = await captureMapScreenshot(drawnBounds);
+    const blob = await captureMapImage(drawnBounds);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
