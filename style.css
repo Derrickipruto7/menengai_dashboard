@@ -483,3 +483,34 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 @media (prefers-reduced-motion: reduce) {
   .gdc-float, .gdc-ring { animation: none; }
 }
+/* Add to the end of style.css — styles for the bounding-box export tool.
+   Reuses .btn-small, .access-note, .toggle, and .mono already defined
+   elsewhere in your stylesheet. */
+
+.export-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  background: #1A1613;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.export-layers .toggle { margin-bottom: 6px; }
+.export-layers .toggle:last-child { margin-bottom: 0; }
+
+#startDrawBtn {
+  margin-bottom: 8px;
+}
+
+#downloadExportBtn {
+  margin-top: 4px;
+}
+#downloadExportBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+#downloadExportBtn:disabled:hover {
+  background: var(--magma); /* cancel the normal hover lightening while disabled */
+}
