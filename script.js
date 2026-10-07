@@ -24,17 +24,17 @@ const satelliteBasemap = L.tileLayer(
 );
 const darkBasemap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-  subdomains: 'abcd', maxZoom: 19
+  subdomains: 'abcd', maxZoom: 19, crossOrigin: true
    
 });
 const streetsBasemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
-  subdomains: 'abc', maxZoom: 19
+  subdomains: 'abc', maxZoom: 19, crossOrigin: true
     
 });
 const terrainBasemap = L.tileLayer('https://tiles.maps.eox.at/wmts/1.0.0/terrain-light_3857/default/g/{z}/{y}/{x}.jpg', {
   attribution: 'Terrain Light by <a href="https://maps.eox.at">EOX</a>',
-  maxZoom: 14
+  maxZoom: 14,crossOrigin: true
   
 });
 satelliteBasemap.addTo(map);
