@@ -122,6 +122,7 @@ const baringoResistivityOverlay = L.imageOverlay(
 
 const baringoToggle = document.getElementById('toggleBaringo');
 if (baringoToggle) {
+  if (baringoToggle.checked) map.addLayer(baringoResistivityOverlay);
   baringoToggle.addEventListener('change', (e) => {
     e.target.checked ? map.addLayer(baringoResistivityOverlay) : map.removeLayer(baringoResistivityOverlay);
   });
