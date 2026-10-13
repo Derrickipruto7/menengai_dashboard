@@ -109,7 +109,30 @@ L.control.layers(
   }
 ).addTo(map);
 
+const baringoBounds = L.latLngBounds(
+  [0.513865, 35.926064],   // SW corner
+  [0.751210, 36.179994]    // NE corner
+);
 
+const baringoResistivityOverlay = L.imageOverlay(
+  'images/baringo-resistivity.png',
+  baringoBounds,
+  { opacity: 0.75 }
+);
+
+const baringoToggle = document.getElementById('toggleBaringo');
+if (baringoToggle) {
+  baringoToggle.addEventListener('change', (e) => {
+    e.target.checked ? map.addLayer(baringoResistivityOverlay) : map.removeLayer(baringoResistivityOverlay);
+  });
+}
+
+const jumpToBaringoBtn = document.getElementById('jumpToBaringo');
+if (jumpToBaringoBtn) {
+  jumpToBaringoBtn.addEventListener('click', () => {
+    map.flyTo(baringoBounds.getCenter(), 12, { duration: 1 });
+  });
+}
 /* ==========================================================
    RESISTIVITY SURVEY
    ========================================================== */
