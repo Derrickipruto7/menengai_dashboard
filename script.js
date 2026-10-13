@@ -115,7 +115,7 @@ const baringoBounds = L.latLngBounds(
 );
 
 const baringoResistivityOverlay = L.imageOverlay(
-  'images/baringo-resistivity.png',
+  'images/_500mbaringo-resistivity.png',
   baringoBounds,
   { opacity: 0.75 }
 );
