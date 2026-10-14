@@ -5,8 +5,7 @@
    Features:
    - Esri satellite basemap
    - Dark / Streets / Terrain basemaps
-   - Resistivity survey points
-   - Resistivity GeoTIFF rasters
+   - Baringo resistivity PNG overlay (with dynamic legend)
    - Field boundary
    - Power stations
    - Wells
@@ -109,6 +108,11 @@ L.control.layers(
   }
 ).addTo(map);
 
+
+/* ==========================================================
+   BARINGO RESISTIVITY OVERLAY
+   ========================================================== */
+
 const baringoBounds = L.latLngBounds(
   [0.513865, 35.926064],   // SW corner
   [0.751210, 36.179994]    // NE corner
@@ -200,22 +204,10 @@ function hideResistivityLegend() {
     if (box) box.style.display = 'none';
 }
 
-const resistivityRasters = {
-    2015: {
-        raster: 'data/resistivity-rasters/resistivity_2015.tif',
-        legend: 'images/resistivity-2015-legend.png'
-    },
 
-    2019: {
-        raster: 'data/resistivity-rasters/resistivity_2019.tif',
-        legend: 'images/resistivity-2019-legend.png'
-    },
-
-    2023: {
-        raster: 'data/resistivity-rasters/resistivity_2023.tif',
-        legend: 'images/resistivity-2023-legend.png'
-    }
-};
+/* ----------------------------------------------------------
+   Baringo toggle
+   ---------------------------------------------------------- */
 
 const baringoToggle =
     document.getElementById('toggleBaringo');
@@ -249,102 +241,6 @@ if (jumpToBaringoBtn) {
   jumpToBaringoBtn.addEventListener('click', () => {
     map.flyTo(baringoBounds.getCenter(), 12, { duration: 1 });
   });
-}
-/* ==========================================================
-   RESISTIVITY SURVEY
-   ========================================================== */
-
-
-
-
-
-  /* --------------------------------------------------------
-     Use cached raster
-     -------------------------------------------------------- */
-
-  if (georasterCache[year]) {
-
-    buildLayer(
-      georasterCache[year]
-    );
-
-    return;
-
-  }
-
-
-  /* --------------------------------------------------------
-     Download and parse GeoTIFF
-     -------------------------------------------------------- */
-
-  fetch(url)
-
-    .then(response => {
-
-      if (!response.ok) {
-
-        throw new Error(
-          `${url} returned HTTP ${response.status}`
-        );
-
-      }
-
-      return response.arrayBuffer();
-
-    })
-
-    .then(arrayBuffer =>
-      parseGeoraster(
-        arrayBuffer
-      )
-    )
-
-    .then(georaster => {
-
-      georasterCache[year] =
-        georaster;
-
-      buildLayer(
-        georaster
-      );
-
-    })
-
-    .catch(error => {
-
-      console.warn(
-        `Resistivity raster not loaded for ${year}:`,
-        error
-      );
-
-    });
-
-}
-
-
-/* ----------------------------------------------------------
-   Raster toggle
-   ---------------------------------------------------------- */
-
-const rasterToggle =
-  document.getElementById(
-    'toggleResistivityRaster'
-  );
-
-
-if (rasterToggle) {
-
-  rasterToggle.addEventListener(
-    'change',
-    () => {
-
-      loadResistivityRaster(
-        selectedYear
-      );
-
-    }
-  );
-
 }
 
 
