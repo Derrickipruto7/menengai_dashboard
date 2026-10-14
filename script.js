@@ -120,13 +120,129 @@ const baringoResistivityOverlay = L.imageOverlay(
   { opacity: 0.75 }
 );
 
-const baringoToggle = document.getElementById('toggleBaringo');
-if (baringoToggle) {
-  if (baringoToggle.checked) map.addLayer(baringoResistivityOverlay);
-  baringoToggle.addEventListener('change', (e) => {
-    e.target.checked ? map.addLayer(baringoResistivityOverlay) : map.removeLayer(baringoResistivityOverlay);
-  });
+
+/* ============================================
+   DYNAMIC RESISTIVITY LEGEND
+   ============================================ */
+
+// Create a legend control on the map
+const resistivityLegend = L.control({
+    position: 'bottomright'
+});
+
+resistivityLegend.onAdd = function () {
+    const div = L.DomUtil.create(
+        'div',
+        'resistivity-legend'
+    );
+
+    div.style.cssText = `
+        background: rgba(15, 20, 25, 0.94);
+        padding: 12px;
+        border: 1px solid #888;
+        border-radius: 8px;
+        color: white;
+        max-width: 230px;
+        display: none;
+    `;
+
+    div.innerHTML = `
+        <div id="resistivityLegendTitle"
+             style="font-weight:bold;
+                    margin-bottom:8px;">
+            Resistivity Legend
+        </div>
+
+        <img id="resistivityLegendImage"
+             src=""
+             alt="Resistivity colour scale"
+             style="width:100%;
+                    height:auto;
+                    display:block;">
+    `;
+
+    return div;
+};
+
+resistivityLegend.addTo(map);
+
+
+// Change the legend to match the selected layer
+function showResistivityLegend(title, imagePath) {
+    const box = document.querySelector(
+        '.resistivity-legend'
+    );
+
+    const image = document.getElementById(
+        'resistivityLegendImage'
+    );
+
+    const heading = document.getElementById(
+        'resistivityLegendTitle'
+    );
+
+    if (!box || !image || !heading) return;
+
+    heading.textContent = title;
+    image.src = imagePath;
+    image.alt = title + ' colour scale';
+
+    box.style.display = 'block';
 }
+
+
+// Hide the legend when the resistivity layer is off
+function hideResistivityLegend() {
+    const box = document.querySelector(
+        '.resistivity-legend'
+    );
+
+    if (box) box.style.display = 'none';
+}
+
+const resistivityRasters = {
+    2015: {
+        raster: 'data/resistivity-rasters/resistivity_2015.tif',
+        legend: 'images/resistivity-2015-legend.png'
+    },
+
+    2019: {
+        raster: 'data/resistivity-rasters/resistivity_2019.tif',
+        legend: 'images/resistivity-2019-legend.png'
+    },
+
+    2023: {
+        raster: 'data/resistivity-rasters/resistivity_2023.tif',
+        legend: 'images/resistivity-2023-legend.png'
+    }
+};
+
+const baringoToggle =
+    document.getElementById('toggleBaringo');
+
+function updateBaringoLayer() {
+    if (baringoToggle && baringoToggle.checked) {
+        map.addLayer(baringoResistivityOverlay);
+
+        showResistivityLegend(
+            'Baringo Resistivity',
+            'images/baringo-resistivity-legend.png'
+        );
+    } else {
+        map.removeLayer(baringoResistivityOverlay);
+        hideResistivityLegend();
+    }
+}
+
+if (baringoToggle) {
+    baringoToggle.addEventListener(
+        'change',
+        updateBaringoLayer
+    );
+
+    updateBaringoLayer();
+}
+
 
 const jumpToBaringoBtn = document.getElementById('jumpToBaringo');
 if (jumpToBaringoBtn) {
@@ -138,387 +254,8 @@ if (jumpToBaringoBtn) {
    RESISTIVITY SURVEY
    ========================================================== */
 
-let resistivityData = [];
-let resistivityYears = [];
-let selectedYear = null;
 
-let resistivityLayer = L.layerGroup().addTo(map);
 
-
-/* ----------------------------------------------------------
-   Resistivity color scale
-   ---------------------------------------------------------- */
-
-function resistivityColor(ohmM) {
-
-  const value = Number(ohmM);
-
-  if (!Number.isFinite(value)) {
-    return '#999999';
-  }
-
-  if (value < 5) {
-    return '#B91C1C';
-  }
-
-  if (value < 15) {
-    return '#F97316';
-  }
-
-  if (value < 40) {
-    return '#FACC15';
-  }
-
-  if (value < 100) {
-    return '#22C55E';
-  }
-
-  return '#2563EB';
-}
-
-
-/* ----------------------------------------------------------
-   Load resistivity GeoJSON
-   ---------------------------------------------------------- */
-
-fetch('data/resistivity.geojson')
-
-  .then(response => {
-
-    if (!response.ok) {
-      throw new Error(
-        `resistivity.geojson returned HTTP ${response.status}`
-      );
-    }
-
-    return response.json();
-  })
-
-  .then(geojson => {
-
-    resistivityData = geojson.features || [];
-
-    resistivityYears = [
-      ...new Set(
-        resistivityData
-          .map(feature => feature.properties?.year)
-          .filter(year => year !== undefined && year !== null)
-      )
-    ].sort((a, b) => Number(a) - Number(b));
-
-    if (resistivityYears.length > 0) {
-
-      selectedYear =
-        resistivityYears[resistivityYears.length - 1];
-
-      renderYearPills();
-      renderResistivityLayer();
-
-    }
-
-  })
-
-  .catch(error => {
-
-    console.warn(
-      'Could not load resistivity data:',
-      error
-    );
-
-  });
-
-
-/* ----------------------------------------------------------
-   Year pills
-   ---------------------------------------------------------- */
-
-function renderYearPills() {
-
-  const container =
-    document.getElementById('yearPills');
-
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = '';
-
-  resistivityYears.forEach(year => {
-
-    const pill =
-      document.createElement('button');
-
-    pill.className =
-      'year-pill' +
-      (year === selectedYear ? ' active' : '');
-
-    pill.textContent = year;
-
-    pill.addEventListener('click', () => {
-
-      selectedYear = year;
-
-      renderYearPills();
-
-      renderResistivityLayer();
-
-      loadResistivityRaster(selectedYear);
-
-    });
-
-    container.appendChild(pill);
-
-  });
-
-}
-
-
-/* ----------------------------------------------------------
-   Render resistivity points
-   ---------------------------------------------------------- */
-
-function renderResistivityLayer() {
-
-  resistivityLayer.clearLayers();
-
-  const stations =
-    resistivityData.filter(
-      feature =>
-        String(feature.properties?.year) ===
-        String(selectedYear)
-    );
-
-  stations.forEach(feature => {
-
-    if (
-      !feature.geometry ||
-      !feature.geometry.coordinates
-    ) {
-      return;
-    }
-
-    const [
-      lng,
-      lat
-    ] = feature.geometry.coordinates;
-
-    const p =
-      feature.properties || {};
-
-    const color =
-      resistivityColor(
-        p.resistivity_ohm_m
-      );
-
-    L.circleMarker(
-      [lat, lng],
-      {
-        radius: 9,
-        fillColor: color,
-        fillOpacity: 0.85,
-        color: '#171412',
-        weight: 1.5
-      }
-    )
-
-      .bindPopup(`
-        <div class="popup-title">
-          ${p.station_id ?? 'Station'}
-          &middot;
-          ${p.year ?? ''}
-        </div>
-
-        <div class="popup-row">
-          <span class="popup-label">
-            Resistivity
-          </span>
-          ${p.resistivity_ohm_m ?? 'N/A'}
-          &Omega;&middot;m
-        </div>
-
-        <div class="popup-row">
-          <span class="popup-label">
-            Depth
-          </span>
-          ${p.depth_m ?? 'N/A'} m
-        </div>
-      `)
-
-      .addTo(resistivityLayer);
-
-  });
-
-
-  /* Statistics */
-
-  const values =
-    stations
-      .map(f =>
-        Number(
-          f.properties?.resistivity_ohm_m
-        )
-      )
-      .filter(Number.isFinite);
-
-
-  const avg =
-    values.length
-      ? Math.round(
-          values.reduce(
-            (sum, value) =>
-              sum + value,
-            0
-          ) / values.length
-        )
-      : 0;
-
-
-  const stats =
-    document.getElementById(
-      'resistivityStats'
-    );
-
-  if (stats) {
-
-    stats.innerHTML = `
-      <div class="stat-inline">
-        <span class="value mono">
-          ${stations.length}
-        </span>
-        <span class="label">
-          stations in ${selectedYear ?? ''}
-        </span>
-      </div>
-
-      <div class="stat-inline">
-        <span class="value mono">
-          ${avg} &Omega;&middot;m
-        </span>
-        <span class="label">
-          average reading
-        </span>
-      </div>
-    `;
-
-  }
-
-}
-
-
-/* ==========================================================
-   RESISTIVITY GEOTIFF RASTERS
-   ========================================================== */
-
-const resistivityRasters = {
-
-  2015:
-    'data/resistivity-rasters/resistivity_2015.tif',
-
-  2019:
-    'data/resistivity-rasters/resistivity_2019.tif',
-
-  2023:
-    'data/resistivity-rasters/resistivity_2023.tif'
-
-};
-
-
-let resistivityRasterLayer = null;
-
-const georasterCache = {};
-
-
-/* ----------------------------------------------------------
-   Load resistivity raster
-   ---------------------------------------------------------- */
-
-function loadResistivityRaster(year) {
-
-  /* Remove previous raster */
-
-  if (resistivityRasterLayer) {
-
-    map.removeLayer(
-      resistivityRasterLayer
-    );
-
-    resistivityRasterLayer = null;
-
-  }
-
-
-  const url =
-    resistivityRasters[year];
-
-  if (!url) {
-    return;
-  }
-
-
-  const toggle =
-    document.getElementById(
-      'toggleResistivityRaster'
-    );
-
-  const showRaster =
-    toggle
-      ? toggle.checked
-      : true;
-
-  if (!showRaster) {
-    return;
-  }
-
-
-  /* --------------------------------------------------------
-     Build raster layer
-     -------------------------------------------------------- */
-
-  const buildLayer =
-    georaster => {
-
-      resistivityRasterLayer =
-        new GeoRasterLayer({
-
-          georaster: georaster,
-
-          opacity: 0.65,
-
-          resolution: 128,
-
-          pixelValuesToColorFn:
-            values => {
-
-              const value =
-                values?.[0];
-
-              if (
-                value === undefined ||
-                value === null ||
-                !Number.isFinite(
-                  Number(value)
-                ) ||
-                Number(value) <= -9999
-              ) {
-
-                return null;
-
-              }
-
-              return resistivityColor(
-                Number(value)
-              );
-
-            }
-
-        });
-
-
-      resistivityRasterLayer.addTo(
-        map
-      );
-
-    };
 
 
   /* --------------------------------------------------------
