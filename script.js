@@ -88,7 +88,7 @@ satelliteBasemap.addTo(map);
 L.control.layers(
   {
     'Satellite imagery': satelliteBasemap,
-    'Dark': darkBasemap,
+   
     'Streets': streetsBasemap,
     'Terrain': terrainBasemap
   },
