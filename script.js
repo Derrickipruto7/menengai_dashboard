@@ -137,7 +137,7 @@ const resistivityLegend = L.control({
 resistivityLegend.onAdd = function () {
     const div = L.DomUtil.create(
         'div',
-        'resistivity-legend'
+        'map-resistivity-legend'
     );
 
     div.style.cssText = `
@@ -174,7 +174,7 @@ resistivityLegend.addTo(map);
 // Change the legend to match the selected layer
 function showResistivityLegend(title, imagePath) {
     const box = document.querySelector(
-        '.resistivity-legend'
+        '.map-resistivity-legend'
     );
 
     const image = document.getElementById(
@@ -198,7 +198,7 @@ function showResistivityLegend(title, imagePath) {
 // Hide the legend when the resistivity layer is off
 function hideResistivityLegend() {
     const box = document.querySelector(
-        '.resistivity-legend'
+        '.map-resistivity-legend'
     );
 
     if (box) box.style.display = 'none';
@@ -241,6 +241,128 @@ if (jumpToBaringoBtn) {
   jumpToBaringoBtn.addEventListener('click', () => {
     map.flyTo(baringoBounds.getCenter(), 12, { duration: 1 });
   });
+}
+
+
+/* ==========================================================
+   RESISTIVITY BY YEAR (PNG overlays)
+   ==========================================================
+
+   TO ADD A YEAR: copy one line in RESISTIVITY_YEARS, then
+   set its year, image path, legend path and bounds.
+
+   bounds = [[south, west], [north, east]]  (lat, lng, WGS84)
+   ========================================================== */
+
+const RESISTIVITY_YEARS = [
+  {
+    year: 2015,
+    image: 'images/resistivity-2015.png',
+    legend: 'images/resistivity-legend.png',
+    bounds: [[-0.30, 35.95], [-0.10, 36.20]]   // REPLACE with real extent
+  },
+  {
+    year: 2019,
+    image: 'images/resistivity-2019.png',
+    legend: 'images/resistivity-legend.png',
+    bounds: [[-0.30, 35.95], [-0.10, 36.20]]   // REPLACE with real extent
+  },
+  {
+    year: 2023,
+    image: 'images/resistivity-2023.png',
+    legend: 'images/resistivity-legend.png',
+    bounds: [[-0.30, 35.95], [-0.10, 36.20]]   // REPLACE with real extent
+  }
+];
+
+const RESISTIVITY_OPACITY = 0.75;
+
+/* Pane below vector layers so wells/boundary stay visible on top */
+map.createPane('resistivityPane');
+map.getPane('resistivityPane').style.zIndex = 350;
+
+let activeResistivityYear = null;
+let activeResistivityLayer = null;
+
+const resistivityToggle = document.getElementById('toggleResistivity');
+const yearPillsEl = document.getElementById('yearPills');
+const resistivityStatsEl = document.getElementById('resistivityStats');
+
+function renderResistivityStats(entry) {
+  if (!resistivityStatsEl) return;
+  if (!entry || !resistivityToggle || !resistivityToggle.checked) {
+    resistivityStatsEl.textContent = '';
+    return;
+  }
+  const [[s, w], [n, e]] = entry.bounds;
+  resistivityStatsEl.innerHTML =
+    `<span class="mono">${entry.year}</span> survey &middot; ` +
+    `<span class="mono">${s.toFixed(3)}, ${w.toFixed(3)}</span> to ` +
+    `<span class="mono">${n.toFixed(3)}, ${e.toFixed(3)}</span>`;
+}
+
+function updateResistivityPills() {
+  if (!yearPillsEl) return;
+  yearPillsEl.querySelectorAll('button').forEach(btn => {
+    const isActive = Number(btn.dataset.year) === activeResistivityYear;
+    btn.classList.toggle('active', isActive);
+    btn.style.background = isActive ? '#E8B33D' : 'transparent';
+    btn.style.color = isActive ? '#171412' : 'inherit';
+  });
+}
+
+function applyResistivityYear() {
+  if (activeResistivityLayer) {
+    map.removeLayer(activeResistivityLayer);
+    activeResistivityLayer = null;
+  }
+
+  const entry = RESISTIVITY_YEARS.find(y => y.year === activeResistivityYear);
+  const visible = resistivityToggle ? resistivityToggle.checked : true;
+
+  if (!entry || !visible) {
+    if (!baringoToggle || !baringoToggle.checked) hideResistivityLegend();
+    renderResistivityStats(null);
+    return;
+  }
+
+  activeResistivityLayer = L.imageOverlay(
+    entry.image,
+    L.latLngBounds(entry.bounds),
+    { opacity: RESISTIVITY_OPACITY, pane: 'resistivityPane' }
+  ).addTo(map);
+
+  showResistivityLegend(`Resistivity ${entry.year}`, entry.legend);
+  renderResistivityStats(entry);
+}
+
+function selectResistivityYear(year) {
+  activeResistivityYear = year;
+  updateResistivityPills();
+  applyResistivityYear();
+}
+
+if (yearPillsEl) {
+  yearPillsEl.innerHTML = '';
+  yearPillsEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;';
+  RESISTIVITY_YEARS.forEach(entry => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-small year-pill';
+    btn.dataset.year = entry.year;
+    btn.textContent = entry.year;
+    btn.addEventListener('click', () => selectResistivityYear(entry.year));
+    yearPillsEl.appendChild(btn);
+  });
+}
+
+if (resistivityToggle) {
+  resistivityToggle.addEventListener('change', applyResistivityYear);
+}
+
+/* Start with the newest year selected */
+if (RESISTIVITY_YEARS.length) {
+  selectResistivityYear(RESISTIVITY_YEARS[RESISTIVITY_YEARS.length - 1].year);
 }
 
 
