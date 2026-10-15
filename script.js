@@ -249,7 +249,7 @@ const RESISTIVITY_YEARS = [
   {
     year: 2015,
     image: 'images/resistivity-2015.png',
-    legend: 'images/resistivity-legend.png',
+    legend: 'images/baringo-resistivity-legend.png',
     bounds: [[0.513865, 35.926064], [0.751210, 36.179994]]    // REPLACE with real extent
   },
   {
