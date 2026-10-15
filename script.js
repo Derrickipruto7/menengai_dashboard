@@ -189,7 +189,7 @@ function showResistivityLegend(title, imagePath) {
 // Hide the legend when the resistivity layer is off
 function hideResistivityLegend() {
     const box = document.querySelector(
-        '.map-resistivity-legend'
+        '.baringo-resistivity-legend'
     );
 
     if (box) box.style.display = 'none';
