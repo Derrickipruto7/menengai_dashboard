@@ -188,11 +188,8 @@ function showResistivityLegend(title, imagePath) {
 
 // Hide the legend when the resistivity layer is off
 function hideResistivityLegend() {
-    const box = document.querySelector(
-        '.baringo-resistivity-legend'
-    );
-
-    if (box) box.style.display = 'none';
+  const box = document.querySelector('.map-resistivity-legend');
+  if (box) box.style.display = 'none';
 }
 
 
@@ -303,26 +300,30 @@ function updateResistivityPills() {
 }
 
 function applyResistivityYear() {
+  // Remove any currently active year layer
   if (activeResistivityLayer) {
     map.removeLayer(activeResistivityLayer);
     activeResistivityLayer = null;
   }
 
   const entry = RESISTIVITY_YEARS.find(y => y.year === activeResistivityYear);
-  const visible = resistivityToggle ? resistivityToggle.checked : true;
+  const visible = resistivityToggle ? resistivityToggle.checked : false;
 
+  // If no year selected or the main toggle is OFF → hide everything
   if (!entry || !visible) {
-    if (!baringoToggle || !baringoToggle.checked) hideResistivityLegend();
+    hideResistivityLegend();
     renderResistivityStats(null);
     return;
   }
 
+  // Show the selected year’s image
   activeResistivityLayer = L.imageOverlay(
     entry.image,
     L.latLngBounds(entry.bounds),
     { opacity: RESISTIVITY_OPACITY, pane: 'resistivityPane' }
   ).addTo(map);
 
+  // Show the matching legend
   showResistivityLegend(`Resistivity ${entry.year}`, entry.legend);
   renderResistivityStats(entry);
 }
