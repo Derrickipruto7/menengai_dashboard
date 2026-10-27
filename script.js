@@ -252,7 +252,7 @@ const RESISTIVITY_YEARS = [
   {
     year: 2019,
     image: 'images/resistivity-2019.png',
-    legend: 'images/resistivity-legend.png',
+    legend: 'images/Color_Scales_0m.png',
     bounds: [[-0.30, 35.95], [-0.10, 36.20]]   // REPLACE with real extent
   },
   {
