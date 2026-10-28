@@ -258,8 +258,8 @@ const RESISTIVITY_YEARS = [
   {
     year: 2023,
     image: 'images/resistivity-2023.png',
-    legend: 'images/resistivity-legend.png',
-    bounds: [[-0.30, 35.95], [-0.10, 36.20]]   // REPLACE with real extent
+    legend: 'images/Color_Scales_500m.png',
+    bounds: [[0.513865, 35.926064], [0.751210, 36.179994]]  // REPLACE with real extent
   }
 ];
 
