@@ -514,3 +514,21 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
 #downloadExportBtn:disabled:hover {
   background: var(--magma); /* cancel the normal hover lightening while disabled */
 }
+/* ---------- Floating jump bar (on the map) ---------- */
+.jump-bar{
+  position:absolute; top:16px; left:50%; transform:translateX(-50%);
+  z-index:1000; display:flex; gap:2px; padding:4px;
+  border-radius:999px; background:rgba(23,20,18,.72);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14); box-shadow:0 8px 24px rgba(0,0,0,.5);
+}
+.jump-bar__btn{
+  appearance:none; border:0; cursor:pointer; white-space:nowrap;
+  padding:7px 14px; border-radius:999px; background:transparent;
+  font:500 12px/1 'Inter',system-ui,sans-serif; color:#ECE5DA;
+  transition:background .15s,color .15s;
+}
+.jump-bar__btn:hover{ background:rgba(255,255,255,.12); }
+.jump-bar__btn:focus-visible{ outline:2px solid #E8B33D; outline-offset:2px; }
+.jump-bar__btn.is-active{ background:#E8B33D; color:#171412; font-weight:600; }
+@media (max-width:480px){ .jump-bar__btn{ padding:7px 10px; } }
