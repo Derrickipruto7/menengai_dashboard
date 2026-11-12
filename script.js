@@ -273,32 +273,24 @@ if (jumpToMenengaiBtn) {
 }
 
 /* ----------------------------------------------------------
-   Jump back to Suswa
+   Jump to Suswa
    ---------------------------------------------------------- */
 
 const SUSWA_VIEW = {
-  center: [-1.150, 36.353],   // same as the starting view
+  center: [-1.150, 36.353],
   zoom: 13
 };
 
+// Suswa has no boundary layer of its own, so fly straight to its
+// coordinates. (The Menengai boundary must NOT be used here - that is
+// what sent the map back to Menengai before.)
 function jumpToSuswa() {
-  // Prefer the field boundary once it has loaded, otherwise use the
-  // starting view. boundaryLayer is declared further down this file;
-  // it is only read when the button is clicked, after the page loads.
-  const bounds = (typeof boundaryLayer !== 'undefined' && boundaryLayer)
-    ? boundaryLayer.getBounds()
-    : null;
-
-  if (bounds && bounds.isValid()) {
-    map.flyToBounds(bounds, { padding: [30, 30], duration: 1 });
-  } else {
-    map.flyTo(SUSWA_VIEW.center, SUSWA_VIEW.zoom, { duration: 1 });
-  }
+  map.flyTo(SUSWA_VIEW.center, SUSWA_VIEW.zoom, { duration: 1 });
 }
 
 let jumpToSuswaBtn = document.getElementById('jumpToSuswa');
 
-// If index.html has no Suswa button yet, add one under the Baringo button
+// If index.html has no Suswa button yet, add one under the Menengai button
 if (!jumpToSuswaBtn && jumpToMenengaiBtn) {
   jumpToSuswaBtn = document.createElement('button');
   jumpToSuswaBtn.id = 'jumpToSuswa';
