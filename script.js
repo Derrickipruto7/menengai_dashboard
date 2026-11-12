@@ -272,6 +272,45 @@ if (jumpToMenengaiBtn) {
   jumpToMenengaiBtn.addEventListener('click', jumpToMenengai);
 }
 
+/* ----------------------------------------------------------
+   Jump back to Menengai
+   ---------------------------------------------------------- */
+
+const SUSWA_VIEW = {
+  center: [-1.150, 36.353],   // same as the starting view
+  zoom: 13
+};
+
+function jumpToSuswa() {
+  // Prefer the field boundary once it has loaded, otherwise use the
+  // starting view. boundaryLayer is declared further down this file;
+  // it is only read when the button is clicked, after the page loads.
+  const bounds = (typeof boundaryLayer !== 'undefined' && boundaryLayer)
+    ? boundaryLayer.getBounds()
+    : null;
+
+  if (bounds && bounds.isValid()) {
+    map.flyToBounds(bounds, { padding: [30, 30], duration: 1 });
+  } else {
+    map.flyTo(SUSWA_VIEW.center, SUSWA_VIEW.zoom, { duration: 1 });
+  }
+}
+
+let jumpToSuswaBtn = document.getElementById('jumpToSuswa');
+
+// If index.html has no Suswa button yet, add one under the Baringo button
+if (!jumpToSuswaBtn && jumpToBaringoBtn) {
+  jumpToSuswaBtn = document.createElement('button');
+  jumpToSuswaBtn.id = 'jumpToSuswa';
+  jumpToSuswaBtn.type = 'button';
+  jumpToSuswaBtn.className = jumpToBaringoBtn.className;
+  jumpToSuswaBtn.textContent = 'Jump to Suswa';
+  jumpToBaringoBtn.insertAdjacentElement('afterend', jumpToSuswaBtn);
+}
+
+if (jumpToSuswaBtn) {
+  jumpToSuswaBtn.addEventListener('click', jumpToSuswa);
+}
 
 /* ==========================================================
    RESISTIVITY BY YEAR (PNG overlays)
