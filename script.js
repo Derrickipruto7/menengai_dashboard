@@ -224,31 +224,21 @@ if (baringoToggle) {
 }
 
 
-const jumpToBaringoBtn = document.getElementById('jumpToBaringo');
-if (jumpToBaringoBtn) {
-  jumpToBaringoBtn.addEventListener('click', () => {
-    map.flyTo(baringoBounds.getCenter(), 12, { duration: 1 });
-  });
-}
-
-
 /* ----------------------------------------------------------
-   Jump back to Menengai
+   Floating "jump to" bar on the map (Baringo / Menengai / Suswa)
    ---------------------------------------------------------- */
 
-const MENENGAI_VIEW = {
-  center: [-0.196, 36.062],   // same as the starting view
-  zoom: 13
-};
+const MENENGAI_VIEW = { center: [-0.196, 36.062], zoom: 13 };
+const SUSWA_VIEW    = { center: [-1.150, 36.353], zoom: 13 };
+
+function jumpToBaringo() {
+  map.flyTo(baringoBounds.getCenter(), 12, { duration: 1 });
+}
 
 function jumpToMenengai() {
-  // Prefer the field boundary once it has loaded, otherwise use the
-  // starting view. boundaryLayer is declared further down this file;
-  // it is only read when the button is clicked, after the page loads.
+  // Prefer the field boundary once it has loaded, otherwise the starting view.
   const bounds = (typeof boundaryLayer !== 'undefined' && boundaryLayer)
-    ? boundaryLayer.getBounds()
-    : null;
-
+    ? boundaryLayer.getBounds() : null;
   if (bounds && bounds.isValid()) {
     map.flyToBounds(bounds, { padding: [30, 30], duration: 1 });
   } else {
@@ -256,53 +246,61 @@ function jumpToMenengai() {
   }
 }
 
-let jumpToMenengaiBtn = document.getElementById('jumpToMenengai');
-
-// If index.html has no Menengai button yet, add one under the Baringo button
-if (!jumpToMenengaiBtn && jumpToBaringoBtn) {
-  jumpToMenengaiBtn = document.createElement('button');
-  jumpToMenengaiBtn.id = 'jumpToMenengai';
-  jumpToMenengaiBtn.type = 'button';
-  jumpToMenengaiBtn.className = jumpToBaringoBtn.className;
-  jumpToMenengaiBtn.textContent = 'Jump to Menengai';
-  jumpToBaringoBtn.insertAdjacentElement('afterend', jumpToMenengaiBtn);
-}
-
-if (jumpToMenengaiBtn) {
-  jumpToMenengaiBtn.addEventListener('click', jumpToMenengai);
-}
-
-/* ----------------------------------------------------------
-   Jump to Suswa
-   ---------------------------------------------------------- */
-
-const SUSWA_VIEW = {
-  center: [-1.150, 36.353],
-  zoom: 13
-};
-
-// Suswa has no boundary layer of its own, so fly straight to its
-// coordinates. (The Menengai boundary must NOT be used here - that is
-// what sent the map back to Menengai before.)
+// Suswa has no boundary layer of its own, so fly straight to its coordinates.
 function jumpToSuswa() {
   map.flyTo(SUSWA_VIEW.center, SUSWA_VIEW.zoom, { duration: 1 });
 }
 
-let jumpToSuswaBtn = document.getElementById('jumpToSuswa');
+const JUMP_TARGETS = [
+  { id: 'baringo',  label: 'Baringo',  go: jumpToBaringo,  center: () => baringoBounds.getCenter() },
+  { id: 'menengai', label: 'Menengai', go: jumpToMenengai, center: () => L.latLng(MENENGAI_VIEW.center) },
+  { id: 'suswa',    label: 'Suswa',    go: jumpToSuswa,    center: () => L.latLng(SUSWA_VIEW.center) }
+];
 
-// If index.html has no Suswa button yet, add one under the Menengai button
-if (!jumpToSuswaBtn && jumpToMenengaiBtn) {
-  jumpToSuswaBtn = document.createElement('button');
-  jumpToSuswaBtn.id = 'jumpToSuswa';
-  jumpToSuswaBtn.type = 'button';
-  jumpToSuswaBtn.className = jumpToMenengaiBtn.className;
-  jumpToSuswaBtn.textContent = 'Jump to Suswa';
-  jumpToMenengaiBtn.insertAdjacentElement('afterend', jumpToSuswaBtn);
+// Hide the old sidebar buttons - the floating bar replaces them
+['jumpToBaringo', 'jumpToMenengai', 'jumpToSuswa'].forEach(id => {
+  const old = document.getElementById(id);
+  if (old) old.style.display = 'none';
+});
+
+const jumpBar = document.createElement('div');
+jumpBar.className = 'jump-bar';
+jumpBar.setAttribute('role', 'group');
+jumpBar.setAttribute('aria-label', 'Jump to field');
+
+JUMP_TARGETS.forEach(t => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'jump-bar__btn';
+  btn.dataset.target = t.id;
+  btn.textContent = t.label;
+  btn.addEventListener('click', () => { t.go(); setActiveJump(t.id); });
+  jumpBar.appendChild(btn);
+});
+
+map.getContainer().appendChild(jumpBar);
+L.DomEvent.disableClickPropagation(jumpBar);
+L.DomEvent.disableScrollPropagation(jumpBar);
+
+function setActiveJump(id) {
+  jumpBar.querySelectorAll('.jump-bar__btn').forEach(b => {
+    const on = b.dataset.target === id;
+    b.classList.toggle('is-active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
 }
 
-if (jumpToSuswaBtn) {
-  jumpToSuswaBtn.addEventListener('click', jumpToSuswa);
-}
+// Highlight whichever field the map is currently centred on
+map.on('moveend', () => {
+  const c = map.getCenter();
+  let best = null, bestD = Infinity;
+  JUMP_TARGETS.forEach(t => {
+    const d = c.distanceTo(t.center());
+    if (d < bestD) { bestD = d; best = t.id; }
+  });
+  setActiveJump(bestD < 40000 ? best : null);   // within ~40 km
+});
+setActiveJump('menengai');
 
 /* ==========================================================
    RESISTIVITY BY YEAR (PNG overlays)
@@ -319,13 +317,13 @@ const RESISTIVITY_YEARS = [
     year: 2015,
     image: 'images/resistivity-2015.png',
     legend: 'images/baringo-resistivity-legend.png',
-    bounds: [[0.513865, 35.926064], [0.751210, 36.179994]]    // REPLACE with real extent
+    bounds: [[0.513804, 35.929534], [0.749656, 36.173790]]
   },
   {
     year: 2019,
     image: 'images/resistivity2019.png',
     legend: 'images/Color_Scales_0m.png',
-    bounds: [[0.513865, 35.926064], [0.751210, 36.179994]]  // REPLACE with real extent
+    bounds: [[0.513347, 35.928923], [0.750266, 36.175010]]
   },
   {
     year: 2023,
