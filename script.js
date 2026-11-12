@@ -273,7 +273,7 @@ if (jumpToMenengaiBtn) {
 }
 
 /* ----------------------------------------------------------
-   Jump back to Menengai
+   Jump back to Suswa
    ---------------------------------------------------------- */
 
 const SUSWA_VIEW = {
@@ -299,13 +299,13 @@ function jumpToSuswa() {
 let jumpToSuswaBtn = document.getElementById('jumpToSuswa');
 
 // If index.html has no Suswa button yet, add one under the Baringo button
-if (!jumpToSuswaBtn && jumpToBaringoBtn) {
+if (!jumpToSuswaBtn && jumpToMenengaiBtn) {
   jumpToSuswaBtn = document.createElement('button');
   jumpToSuswaBtn.id = 'jumpToSuswa';
   jumpToSuswaBtn.type = 'button';
-  jumpToSuswaBtn.className = jumpToBaringoBtn.className;
+  jumpToSuswaBtn.className = jumpToMenengaiBtn.className;
   jumpToSuswaBtn.textContent = 'Jump to Suswa';
-  jumpToBaringoBtn.insertAdjacentElement('afterend', jumpToSuswaBtn);
+  jumpToMenengaiBtn.insertAdjacentElement('afterend', jumpToSuswaBtn);
 }
 
 if (jumpToSuswaBtn) {
